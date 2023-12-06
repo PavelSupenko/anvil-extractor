@@ -1,0 +1,3 @@
+-r model/requirements.txt
+-r view/requirements.txt
+-r controller/requirements.txt
