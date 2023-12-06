@@ -4,8 +4,8 @@ import os
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QAction
 
-from status_bar import StatusBar
-from tree_view import TreeView
+from view.status_bar import StatusBar
+from view.tree_view import TreeView
 
 
 class View(QtWidgets.QApplication):
@@ -104,10 +104,15 @@ class View(QtWidgets.QApplication):
         self.main_window.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "ACExplorer"))
 
     def load_style(self, style_name: str):
-        with open(f'./resources/themes/{style_name}/style.qss') as style:
+        resources_path = os.path.join(os.path.dirname(__file__), 'resources')
+        style_path = os.path.join(resources_path, 'themes', style_name, 'style.qss')
+        icons_path = os.path.join(resources_path, 'icons')
+        style_icons_path = os.path.join(resources_path, 'themes', style_name, 'icons')
+
+        with open(style_path) as style:
             self.setStyleSheet(style.read())
-        for icon in os.listdir('resources/icons'):
-            self.icons[os.path.splitext(icon)[0]] = QtGui.QIcon(f'resources/icons/{icon}')
-        if os.path.isdir(f'resources/themes/{style_name}/icons'):
-            for icon in os.listdir(f'resources/themes/{style_name}/icons'):
-                self.icons[os.path.splitext(icon)[0]] = QtGui.QIcon(f'resources/themes/{style_name}/icons/{icon}')
+        for icon in os.listdir(icons_path):
+            self.icons[os.path.splitext(icon)[0]] = QtGui.QIcon(os.path.join(icons_path, icon))
+        if os.path.isdir(style_icons_path):
+            for icon in os.listdir(style_icons_path):
+                self.icons[os.path.splitext(icon)[0]] = QtGui.QIcon(os.path.join(style_icons_path, icon))

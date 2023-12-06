@@ -1,24 +1,27 @@
 from typing import Dict, Union, Tuple, List, Optional
 from PySide6 import QtWidgets, QtGui, QtCore
 
+import re
+
+from view.tree_view_entry import TreeViewEntry
+
 
 class TreeView(QtWidgets.QTreeWidget):
 
     def __init__(self, parent: QtWidgets.QWidget, icons: Dict[str, QtGui.QIcon]):
         QtWidgets.QTreeWidget.__init__(self, parent)
+        self.root_name = None
         self.icons = icons
         self._entries: Dict[Tuple[Union[None, str], Union[None, int], Union[None, int]], TreeViewEntry] = {}
         self._search: Dict[str, List[TreeViewEntry]] = {}
-        self._game_identifier = None
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.open_context_menu)
 
-    def load_game(self, game_identifier: str):
+    def update_root(self, name: str):
+        self.root_name = name
         self._entries.clear()
         self._search.clear()
         self.clear()
-        self._game_identifier = game_identifier
-        self.insert(game_identifier, icon=self.icons['directory'])
+        self.insert(name, icon=self.icons['directory'])
 
     def search(self, search_string: str, match_case: bool, regex: bool) -> None:
         if search_string == '':
@@ -76,10 +79,10 @@ class TreeView(QtWidgets.QTreeWidget):
                         forge_file_name,
                         datafile_id,
                         file_id,
-                        icon=self.icons.get(
-                            pyUbiForge.temp_files(file_id, forge_file_name, datafile_id).file_type,
-                            None
-                        )
+                        # icon=self.icons.get(
+                        #     pyUbiForge.temp_files(file_id, forge_file_name, datafile_id).file_type,
+                        #     None
+                        # )
                     )
             forge_file.new_datafiles.clear()
 
@@ -87,7 +90,7 @@ class TreeView(QtWidgets.QTreeWidget):
         entry: TreeViewEntry = self.itemAt(event.pos())
         if entry is not None and entry.depth == 3 and entry.childCount() == 0:
             forge_file_name, datafile_id = entry.forge_file_name, entry.datafile_id
-            pyUbiForge.forge_files[forge_file_name].decompress_datafile(datafile_id)
+            # pyUbiForge.forge_files[forge_file_name].decompress_datafile(datafile_id)
             self.populate_tree()
         QtWidgets.QTreeWidget.mousePressEvent(self, event)
 
@@ -95,9 +98,10 @@ class TreeView(QtWidgets.QTreeWidget):
         entry: TreeViewEntry = self.itemAt(position)
         if entry is not None:
             unique_identifier = (None, entry.forge_file_name, entry.datafile_id, entry.file_id)[entry.depth - 1]
-            plugin_names, file_id = right_click_plugins.query(entry.depth, unique_identifier, entry.forge_file_name,
-                                                              entry.datafile_id)
-            if len(plugin_names) > 0:
-                menu = ContextMenu(self.icons, plugin_names, file_id, entry.forge_file_name, entry.datafile_id)
-                menu.exec(self.viewport().mapToGlobal(position))
+            # plugin_names, file_id = right_click_plugins.query(entry.depth, unique_identifier, entry.forge_file_name,
+            #                                                   entry.datafile_id)
+
+            # if len(plugin_names) > 0:
+            #     menu = ContextMenu(self.icons, plugin_names, file_id, entry.forge_file_name, entry.datafile_id)
+            #     menu.exec(self.viewport().mapToGlobal(position))
             self.populate_tree()

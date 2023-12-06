@@ -1,5 +1,5 @@
-from typing import Dict, Union, Tuple, List, Optional
-from PySide6 import QtWidgets, QtGui, QtCore
+from typing import Dict, Union
+from PySide6 import QtWidgets, QtGui
 
 
 class PluginOptionsScreen(QtWidgets.QDialog):

@@ -1,6 +1,8 @@
 from typing import Union, List
 from PySide6 import QtWidgets, QtGui
 
+from view.tree_view import TreeView
+
 
 class TreeViewEntry(QtWidgets.QTreeWidgetItem):
     def __init__(self, tree_view: Union[TreeView, 'TreeViewEntry'], entry_name: str, forge_file_name: str = None,
@@ -64,10 +66,6 @@ class TreeViewEntry(QtWidgets.QTreeWidgetItem):
         if search_string == '' or any(
                 search_string in attr for attr in [self._entry_name, self._forge_file_name] if attr is not None):
             # if the string is empty or matches one of the parameters unhide self and children.
-            self.recursively_unhide_children()
-            return True
-        elif pyUbiForge.CONFIG.get('dev', False) and any(search_string.upper() in attr for attr in self.dev_search):
-            # if in dev mode and matches one of the file ids unhide self and children
             self.recursively_unhide_children()
             return True
         else:
