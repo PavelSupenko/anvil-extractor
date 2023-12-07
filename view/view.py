@@ -5,12 +5,13 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QAction
 
 from view.status_bar import StatusBar
+from model.files.files_tree import FileTree
 from view.tree_view import TreeView
 
 
 class View(QtWidgets.QApplication):
 
-    def __init__(self):
+    def __init__(self, tree: FileTree):
         QtWidgets.QApplication.__init__(self)
         # logging.info('Building GUI Window')
 
@@ -34,7 +35,7 @@ class View(QtWidgets.QApplication):
         # drop down box to select the game
         self.game_select = QtWidgets.QComboBox()
         self.game_select.setObjectName("game_select")
-        self.game_select.addItems(['ACU','AC1','AC2'])
+        self.game_select.addItems(['ACU', 'AC1', 'AC2'])
         self.horizontal_layout.addWidget(self.game_select, 1)
 
         # search box
@@ -97,11 +98,17 @@ class View(QtWidgets.QApplication):
         self.load_style('QDarkStyle')
         self.translate_()
 
+    def show(self):
         self.main_window.show()
-        self.exec()
+
+    def wait(self):
+        return self.exec()
 
     def translate_(self):
         self.main_window.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "ACExplorer"))
+
+    def update_tree(self, tree: FileTree):
+        self.file_view.set_tree(tree)
 
     def load_style(self, style_name: str):
         resources_path = os.path.join(os.path.dirname(__file__), 'resources')
@@ -109,8 +116,9 @@ class View(QtWidgets.QApplication):
         icons_path = os.path.join(resources_path, 'icons')
         style_icons_path = os.path.join(resources_path, 'themes', style_name, 'icons')
 
-        with open(style_path) as style:
-            self.setStyleSheet(style.read())
+        # with open(style_path) as style:
+        #     self.setStyleSheet(style.read())
+
         for icon in os.listdir(icons_path):
             self.icons[os.path.splitext(icon)[0]] = QtGui.QIcon(os.path.join(icons_path, icon))
         if os.path.isdir(style_icons_path):

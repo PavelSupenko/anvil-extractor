@@ -1,4 +1,4 @@
-from controller.view_controller import ViewController
+from controller.controller import Controller
 
 if __name__ == "__main__":
-    view_controller = ViewController()
+    view_controller = Controller()
