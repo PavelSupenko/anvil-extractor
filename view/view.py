@@ -1,9 +1,11 @@
 import logging
 import os
+from typing import Callable
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QAction
 
+from model.files.file_data import FileData
 from view.status_bar import StatusBar
 from model.files.files_tree import FileTree
 from view.tree_view import TreeView
@@ -11,7 +13,7 @@ from view.tree_view import TreeView
 
 class View(QtWidgets.QApplication):
 
-    def __init__(self, tree: FileTree):
+    def __init__(self, item_clicked_callback: Callable[[str], None]):
         QtWidgets.QApplication.__init__(self)
         # logging.info('Building GUI Window')
 
@@ -53,9 +55,8 @@ class View(QtWidgets.QApplication):
         self.search_update.start()
 
         # file tree view
-        self.file_view = TreeView(self.central_widget, self.icons)
+        self.file_view = TreeView(self.central_widget, self.icons, item_clicked_callback)
         self.file_view.setObjectName("file_view")
-        self.file_view.setHeaderHidden(True)
         self.vertical_layout.addWidget(self.file_view)
 
         # menu options
@@ -107,8 +108,11 @@ class View(QtWidgets.QApplication):
     def translate_(self):
         self.main_window.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Anvil extractor"))
 
-    def update_tree(self, tree: FileTree):
-        self.file_view.set_tree(tree)
+    def reset_tree(self, tree: FileTree):
+        self.file_view.reset_tree(tree)
+
+    def update_tree(self, parent_name: str, node_data: FileData):
+        self.file_view.update_tree(parent_name, node_data)
 
     def load_style(self, style_name: str):
         resources_path = os.path.join(os.path.dirname(__file__), 'resources')

@@ -32,6 +32,26 @@ class FileTree:
         self._traverse_and_filter(self.root, filtered_tree, filter_text)
         return filtered_tree
 
+    def find_file_by_name(self, name) -> FileData:
+        return self._find_file_by_name(self.root, name)
+
+    def find_file_by_name_and_parent(self, parent_name, file_name):
+        matching_parents = [node for node in self.root.children if node.name == parent_name]
+        for parent in matching_parents:
+            for child in parent.children:
+                if child.name == file_name:
+                    return child
+        return None
+
+    def _find_file_by_name(self, current_node, name):
+        if current_node.name == name:
+            return current_node
+        for child in current_node.children:
+            result = self._find_file_by_name(child, name)
+            if result:
+                return result
+        return None
+
     def _traverse_and_sort(self, node, sorted_tree):
         sorted_tree.append((node.name, node.depth))
         node.children.sort(key=lambda x: x.name)
