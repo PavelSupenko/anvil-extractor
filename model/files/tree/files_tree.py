@@ -1,4 +1,4 @@
-from model.files.file_data import FileData
+from model.files.tree.file_data import FileData
 
 
 class FileTree:

@@ -5,9 +5,9 @@ from typing import Callable
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QAction
 
-from model.files.file_data import FileData
+from model.files.tree.file_data import FileData
 from view.status_bar import StatusBar
-from model.files.files_tree import FileTree
+from model.files.tree.files_tree import FileTree
 from view.tree_view import TreeView
 
 

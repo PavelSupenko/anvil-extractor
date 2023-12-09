@@ -3,9 +3,9 @@ from typing import Callable
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTreeWidgetItem, QMenu
 from PySide6.QtGui import QIcon
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtWidgets
 
-from model.files.file_data import FileData
+from model.files.tree.file_data import FileData
 
 
 class TreeView(QtWidgets.QTreeWidget):
@@ -13,7 +13,7 @@ class TreeView(QtWidgets.QTreeWidget):
     def __init__(self, parent: QtWidgets.QWidget, icons, handle_item_clicked: Callable[[str], None]):
         QtWidgets.QTreeWidget.__init__(self, parent)
         # self.setHeaderHidden(True)
-        
+
         self.item_clicked_callback = handle_item_clicked
 
         self.icons = icons

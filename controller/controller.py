@@ -1,5 +1,5 @@
-from model.files.file_data import FileData
-from model.files.files_tree import FileTree
+from model.files.tree.file_data import FileData
+from model.files.tree.files_tree import FileTree
 from model.forge.forge_files_finder import ForgeFilesFinder
 from model.forge.forge_reader import ForgeReader
 from view.view import View

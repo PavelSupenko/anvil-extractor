@@ -5,7 +5,7 @@ from typing import List, Tuple
 import numpy
 
 from model.compression.compressor import Compressor
-from model.files.file_data import FileData
+from model.files.tree.file_data import FileData
 
 
 class ForgeReader:
