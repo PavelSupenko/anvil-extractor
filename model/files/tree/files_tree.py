@@ -9,6 +9,7 @@ class FileTree:
         parent = self._find_node(self.root, parent_name)
         if parent:
             child = FileData(child_name, depth=parent.depth + 1, file_id=file_id)
+            child.parent = parent
             parent.children.append(child)
             return True
         return False

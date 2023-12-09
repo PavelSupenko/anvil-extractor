@@ -23,7 +23,7 @@ class ForgeReader:
         self.path = path
         self.forge_name = path.split('/')[-1].split('.')[0]
 
-        self._forge_data = None
+        self._forge_data: ForgeData = None
 
     def parse_forge_data(self) -> list[FileData]:
         self._forge_data = self._parse_forge_data()
@@ -36,58 +36,54 @@ class ForgeReader:
 
         return files_data
 
-    def parse_file_data(self, file_data: FileData) -> list[FileData]:
-        pass
+    def parse_file_data(self, file_data: FileData):
+        forge_file_data: ForgeFileData = self._forge_data.files_data[file_data.file_id]
 
-    def parse_all_files(self) -> list[FileData]:
-        # get the data file metadata
-        metadata, self._data_file_location = self._parse_forge_data()
+        data_file_id = forge_file_data.id
+        data_file_name = forge_file_data.name
+        data_file_resource_type = forge_file_data.type
+
+        print(f"Decompressing {self.forge_name} {data_file_id} {data_file_name}.")
+
+        if data_file_resource_type == 0:
+            print(f"Skipping {self.forge_name} {data_file_id} {data_file_name} because type is 0.")
+            return []
+        try:
+            files = self.get_decompressed_files(data_file_id)
+        except Exception as exception:
+            print(f"Error loading {self.forge_name} {data_file_id} {data_file_name} with error {exception}.")
+            return []
+
+        assert data_file_id in files
+        # in some cases the info will be in the index but not the data file (non archive formats)
+        # and in some cases the info will be in the data file but not the index
+        # (Brotherhood is the first game I can see with data file id in the index)
+
+        data_file_resource_type = (
+                data_file_resource_type or files[data_file_id][0]
+        )
+        data_file_name = data_file_name or files[data_file_id][1]
+
+        # TODO: rewrite file_storage to use forge_file_data
+        file_storage = {
+            file_id: (file_resource_type, file_name)
+            for file_id, (file_resource_type, file_name, _) in files.items()
+        }
+        file_storage[data_file_id] = (data_file_resource_type, data_file_name)
+
+        for file_id, (file_resource_type, file_name) in file_storage.items():
+            child_file_data = FileData(file_name, file_id, 3)
+            child_file_data.parent = file_data
+            file_data.children.append(child_file_data)
+
+    def parse_files_data(self, files_data: list[FileData]):
 
         print(f"Decompressing {self.forge_name}.")
-        database = {}
-        for data_file_id, (data_file_resource_type, data_file_name,) in metadata.items():
-            # data_file = self._data_files[data_file_id] = DataFile(data_file_id, data_file_resource_type, data_file_name)
-            if data_file_resource_type == 0:
-                continue
-            try:
-                files = self.get_decompressed_files(data_file_id)
-            except:
-                # traceback.print_exc()
-                print(f"Error loading {self.forge_name} {data_file_id} {data_file_name}")
-                continue
-            assert data_file_id in files
-            # in some cases the info will be in the index but not the data file (non archive formats)
-            # and in some cases the info will be in the data file but not the index
-            # (Brotherhood is the first game I can see with data file id in the index)
-            data_file_resource_type = (
-                    data_file_resource_type or files[data_file_id][0]
-            )
-            data_file_name = data_file_name or files[data_file_id][1]
-            file_storage = {
-                file_id: (file_resource_type, file_name)
-                for file_id, (file_resource_type, file_name, _) in files.items()
-            }
-            file_storage[data_file_id] = (data_file_resource_type, data_file_name)
 
-            database[data_file_id] = (
-                data_file_resource_type,
-                data_file_name,
-                file_storage,
-            )
+        for file_data in files_data:
+            self.parse_file_data(file_data)
 
-        print(f"Finished decompressing {len(metadata)} data files.")
-
-        files_data = []
-
-        for data_file_id, (data_file_resource_type, data_file_name, file_storage) in database.items():
-            data_file = FileData(data_file_name, data_file_id, 2)
-            files_data.append(data_file)
-
-            for file_id, (file_resource_type, file_name) in file_storage.items():
-                file_data = FileData(file_name, file_id, 3)
-                data_file.children.append(file_data)
-
-        return files_data
+        print(f"Finished decompressing {len(files_data)} forge item files.")
 
     def get_decompressed_files(self, data_file_id):
         """Get the data file unpacked into its individual files.
@@ -119,7 +115,10 @@ class ForgeReader:
         :param data_file_id: The numerical id of the data file
         :return: The bytes as they appear on disk
         """
-        offset, size = self._data_file_location[data_file_id]
+
+        file_data: ForgeFileData = self._forge_data.files_data[data_file_id]
+        offset = file_data.raw_data_offset
+        size = file_data.raw_data_size
         with open(self.path, "rb") as f:
             f.seek(offset)
             return f.read(size)
@@ -395,7 +394,7 @@ class ForgeReader:
                     extra16_count = index_table[-1][2]
                     if extra16_count > 0:
                         uncompressed_data.seek(extra16_count * 2, 1)
-            if self._forge_version == 26:
+            if self._forge_data.version == 26:
                 # AC4MP
                 extra32 = struct.unpack("<I", uncompressed_data.read(4))[0]
                 if extra32:
