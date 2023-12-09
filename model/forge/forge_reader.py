@@ -63,11 +63,11 @@ class ForgeReader:
         files_data = []
 
         for data_file_id, (data_file_resource_type, data_file_name, file_storage) in database.items():
-            data_file = FileData(data_file_name, data_file_id, 1)
+            data_file = FileData(data_file_name, data_file_id, 2)
             files_data.append(data_file)
 
             for file_id, (file_resource_type, file_name) in file_storage.items():
-                file_data = FileData(file_name, file_id, 2)
+                file_data = FileData(file_name, file_id, 3)
                 data_file.children.append(file_data)
 
         return files_data

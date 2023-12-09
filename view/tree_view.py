@@ -85,9 +85,12 @@ class TreeView(QtWidgets.QTreeWidget):
         else:
             item = QTreeWidgetItem(parent_item, [node.name, ''])
 
-        parent_item.addChild(item)
-        if node.children:
-            if not file_type:
+            if node.depth == 1:
                 item.setIcon(0, QIcon(self.icons['directory']))
+            else:
+                item.setIcon(0, QIcon(self.icons['unknown_file']))
 
+        parent_item.addChild(item)
+
+        if node.children:
             self._add_nodes_to_tree(item, node.children)
