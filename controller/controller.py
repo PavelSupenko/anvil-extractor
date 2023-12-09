@@ -56,15 +56,18 @@ class Controller:
             return
 
         if clicked_file_data.type == 'forge':
-            self.update_tree_by_parsing_forge(clicked_file_data)
+            self.parse_forge(clicked_file_data)
 
-    def update_tree_by_parsing_forge(self, file_data: FileData):
+    def parse_forge(self, file_data: FileData):
         path = file_data.path
         print(f'File path: {path}')
 
         forge_reader = ForgeReader(path, data_file_format=3)
-        parsed_files = forge_reader.parse()
+        parsed_files = forge_reader.parse_forge_data()
 
         for parsed_file in parsed_files:
             file_data.children.append(parsed_file)
             self.update_tree(file_data.name, parsed_file)
+
+    def parse_forge_file(self, file_data: FileData):
+        pass

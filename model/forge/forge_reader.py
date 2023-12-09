@@ -6,6 +6,8 @@ import numpy
 
 from model.compression.compressor import Compressor
 from model.files.tree.file_data import FileData
+from model.forge.forge_data import ForgeData
+from model.forge.forge_file_data import ForgeFileData
 
 
 class ForgeReader:
@@ -19,12 +21,27 @@ class ForgeReader:
         # 0=[AC1], 1=[AC2, AC2B, AC2R, AC3MP, AC4MP], 2=[AC3, AC3L, ACRo], 3=[ACU]
         self.data_file_format = data_file_format
         self.path = path
-
         self.forge_name = path.split('/')[-1].split('.')[0]
 
-    def parse(self) -> list[FileData]:
+        self._forge_data = None
+
+    def parse_forge_data(self) -> list[FileData]:
+        self._forge_data = self._parse_forge_data()
+
+        files_data = []
+
+        for forge_file_id, forge_file_data in self._forge_data.files_data.items():
+            data_file = FileData(forge_file_data.name, forge_file_id, 2)
+            files_data.append(data_file)
+
+        return files_data
+
+    def parse_file_data(self, file_data: FileData) -> list[FileData]:
+        pass
+
+    def parse_all_files(self) -> list[FileData]:
         # get the data file metadata
-        metadata, self._data_file_location = self._parse_forge()
+        metadata, self._data_file_location = self._parse_forge_data()
 
         print(f"Decompressing {self.forge_name}.")
         database = {}
@@ -107,14 +124,14 @@ class ForgeReader:
             f.seek(offset)
             return f.read(size)
 
-    def _parse_forge(self):
+    def _parse_forge_data(self) -> ForgeData:
         """Parse the forge file to load metadata and data file locations."""
         print(f"Reading metadata from {self.forge_name}.")
 
         with open(self.path, "rb") as forge_file:
             # header
             if forge_file.read(8) != b"scimitar":
-                return {}, {}
+                return ForgeData(0, {})
             forge_file.seek(1, 1)
             forge_file_version, file_data_header_offset = struct.unpack(
                 "<iQ", forge_file.read(12)
@@ -123,7 +140,7 @@ class ForgeReader:
                 raise Exception(
                     f'Unsupported Forge file format : "{forge_file_version}"'
                 )
-            self._forge_version = forge_file_version
+            forge_version = forge_file_version
             if forge_file_version <= 26:
                 forge_file.seek(file_data_header_offset + 32)
             else:
@@ -180,21 +197,44 @@ class ForgeReader:
             # assert numpy.array_equal(index_table['raw_data_size'], name_table['raw_data_size']), "The duplicated raw data sizes do not match"
             # TODO: the above sometimes do not match in games before Unity (they all match in Unity). There seems to be more compressed data after this if that is the case.
 
+            # Convert "data_file_name" column to strings
             data_file_names = name_table["data_file_name"].astype(str)
-            return dict(
-                zip(
+
+            # Create a dictionary mapping file_id to file type and data file names
+            file_info_dict = {}
+            for file_id, file_type, data_file_name in zip(
                     index_table["file_id"],
-                    zip(name_table["file_type"].tolist(), data_file_names),
-                )
-            ), dict(
-                zip(
+                    name_table["file_type"],
+                    data_file_names
+            ):
+                file_info_dict[file_id] = (file_type, data_file_name)
+
+            # Create a dictionary mapping file_id to raw data offset and size
+            raw_data_dict = {}
+            for file_id, raw_data_offset, raw_data_size in zip(
                     index_table["file_id"],
-                    zip(
-                        index_table["raw_data_offset"].tolist(),
-                        index_table["raw_data_size"].tolist(),
-                    ),
-                )
-            )
+                    index_table["raw_data_offset"],
+                    index_table["raw_data_size"]
+            ):
+                raw_data_dict[file_id] = (raw_data_offset, raw_data_size)
+
+            files_data_dict = {}
+            for file_id in file_info_dict:
+                file_info = file_info_dict[file_id]
+                raw_data = raw_data_dict.get(file_id)  # Using get() to handle missing keys
+
+                file_data: ForgeFileData = ForgeFileData(file_id)
+
+                if file_info:
+                    file_data.add_info(file_info[0], file_info[1])
+
+                if raw_data:
+                    file_data.add_raw_data(raw_data[0], raw_data[1])
+
+                # Combine file_info and raw_data into a nested tuple
+                files_data_dict[file_id] = file_data
+
+            return ForgeData(forge_version, files_data_dict)
 
     def _read_compressed_data_section(
         self, raw_data_chunk: BytesIO, exhaust=True
