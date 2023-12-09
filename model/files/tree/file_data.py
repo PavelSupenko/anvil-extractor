@@ -3,7 +3,6 @@ class FileData:
         self.file_id = file_id
         self.path = path
 
-        self.compressed = False
         self.data = None
 
         file_name = path.split('/')[-1].split('.')
@@ -12,12 +11,6 @@ class FileData:
 
         self.depth = depth
         self.children = []
-
-    def mark_as_compressed(self):
-        self.compressed = True
-
-    def mark_as_uncompressed(self):
-        self.compressed = False
 
     def __str__(self):
         return f"{self.name}\t\t{self.file_id:016X}"
