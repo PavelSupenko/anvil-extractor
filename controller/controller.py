@@ -45,9 +45,8 @@ class Controller:
         self.reset_tree(new_tree)
 
     def handle_item_clicked(self, item_name: str):
-        print(f'File: {item_name} double clicked')
-
         clicked_file_data: FileData = self.current_tree.find_file_by_name(item_name)
+        print(f'File: {str(clicked_file_data)} clicked')
 
         if clicked_file_data is None:
             print(f'File data not found for {item_name}')

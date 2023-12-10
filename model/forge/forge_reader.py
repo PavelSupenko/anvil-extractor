@@ -72,7 +72,7 @@ class ForgeReader:
         file_storage[data_file_id] = (data_file_resource_type, data_file_name)
 
         for file_id, (file_resource_type, file_name) in file_storage.items():
-            child_file_data = FileData(file_name, file_id, 3)
+            child_file_data = FileData(file_name, file_id, 3, file_resource_type)
             child_file_data.parent = file_data
             file_data.children.append(child_file_data)
 

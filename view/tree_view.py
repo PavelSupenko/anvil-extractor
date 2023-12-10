@@ -19,14 +19,14 @@ class TreeView(QtWidgets.QTreeWidget):
         self.icons = icons
         self.tree = None
 
-        self.itemDoubleClicked.connect(self.handle_item_double_clicked)
+        self.itemClicked.connect(self.handle_item_clicked)
 
     def reset_tree(self, tree):
         self.tree = tree
 
         self.clear()
-        self.setHeaderLabels(["Name", "File Type"])
-        self._set_column_proportions(0.75, 0.25)  # Set proportional column widths
+        self.setHeaderLabels(["Name", "File Type", "File ID"])
+        self._set_column_proportions(0.5, 0.25, 0.25)  # Set proportional column widths
         self._add_nodes_to_tree(self.invisibleRootItem(), [self.tree.root])
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -43,7 +43,7 @@ class TreeView(QtWidgets.QTreeWidget):
         if parent_item:
             self._add_node_to_tree(parent_item, node_data)
 
-    def handle_item_double_clicked(self, item: QTreeWidgetItem, column: int):
+    def handle_item_clicked(self, item: QTreeWidgetItem, column: int):
         item_name: str = item.text(0)
         self.item_clicked_callback(item_name)
 
@@ -60,14 +60,16 @@ class TreeView(QtWidgets.QTreeWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self._set_column_proportions(0.75, 0.25)
+        self._set_column_proportions(0.5, 0.25, 0.25)
 
-    def _set_column_proportions(self, name_proportion, type_proportion):
+    def _set_column_proportions(self, name_proportion, type_proportion, id_proportion):
         total_width = self.width()
         name_width = total_width * name_proportion
         type_width = total_width * type_proportion
+        id_width = total_width * id_proportion
         self.setColumnWidth(0, int(name_width))
         self.setColumnWidth(1, int(type_width))
+        self.setColumnWidth(2, int(id_width))
 
     def _add_nodes_to_tree(self, parent_item, nodes: list[FileData]):
         for node in nodes:
@@ -75,6 +77,7 @@ class TreeView(QtWidgets.QTreeWidget):
 
     def _add_node_to_tree(self, parent_item, node: FileData):
         file_type = node.type
+        file_id = node.file_id
 
         item: QTreeWidgetItem
 
@@ -82,6 +85,7 @@ class TreeView(QtWidgets.QTreeWidget):
             item = QTreeWidgetItem(parent_item, [node.name, node.type])
             item.setIcon(0, QIcon(self.icons[file_type]))
             item.setText(1, file_type)
+            item.setText(2, str(file_id))
         else:
             item = QTreeWidgetItem(parent_item, [node.name, ''])
 
