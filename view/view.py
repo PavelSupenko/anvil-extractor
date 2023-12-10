@@ -5,15 +5,14 @@ from typing import Callable
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QAction
 
-from model.files.tree.file_data import FileData
+from model.files.tree.file_data_base import FileDataBase
 from view.status_bar import StatusBar
-from model.files.tree.files_tree import FileTree
-from view.tree_view import TreeView
+from view.tree.tree_view import TreeView
 
 
 class View(QtWidgets.QApplication):
 
-    def __init__(self, item_clicked_callback: Callable[[str], None]):
+    def __init__(self, item_clicked_callback: Callable[[FileDataBase], None]):
         QtWidgets.QApplication.__init__(self)
         # logging.info('Building GUI Window')
 
@@ -108,11 +107,14 @@ class View(QtWidgets.QApplication):
     def translate_(self):
         self.main_window.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Anvil extractor"))
 
-    def reset_tree(self, tree: FileTree):
-        self.file_view.reset_tree(tree)
+    def reset_tree(self):
+        self.file_view.reset_tree()
 
-    def update_tree(self, parent_name: str, node_data: FileData):
-        self.file_view.update_tree(parent_name, node_data)
+    def add_item_by_name(self, parent_name: str, node_data: FileDataBase):
+        self.file_view.update_tree_by_name(parent_name, node_data)
+
+    def add_item(self, parent_data: FileDataBase, node_data: FileDataBase):
+        self.file_view.update_tree(parent_data, node_data)
 
     def load_style(self, style_name: str):
         resources_path = os.path.join(os.path.dirname(__file__), 'resources')

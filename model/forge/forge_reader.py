@@ -5,7 +5,6 @@ from typing import List, Tuple
 import numpy
 
 from model.compression.compressor import Compressor
-from model.files.tree.file_data import FileData
 from model.forge.forge_data import ForgeData
 from model.forge.forge_file_data import ForgeFileData
 
@@ -25,19 +24,22 @@ class ForgeReader:
 
         self._forge_data: ForgeData = None
 
-    def parse_forge_data(self) -> list[FileData]:
+    def parse_forge_data(self) -> list[ForgeFileData]:
         self._forge_data = self._parse_forge_data()
 
         files_data = []
 
         for forge_file_id, forge_file_data in self._forge_data.files_data.items():
-            data_file = FileData(forge_file_data.name, forge_file_id, 2)
-            files_data.append(data_file)
+            files_data.append(forge_file_data)
 
         return files_data
 
-    def parse_file_data(self, file_data: FileData):
-        forge_file_data: ForgeFileData = self._forge_data.files_data[file_data.file_id]
+    def parse_file_data(self, file_data: ForgeFileData):
+        if file_data.id not in self._forge_data.files_data:
+            print(f"Skipping {self.forge_name} {file_data.id} {file_data.name} because it is not in the index.")
+            return
+
+        forge_file_data: ForgeFileData = self._forge_data.files_data[file_data.id]
 
         data_file_id = forge_file_data.id
         data_file_name = forge_file_data.name
@@ -72,11 +74,18 @@ class ForgeReader:
         file_storage[data_file_id] = (data_file_resource_type, data_file_name)
 
         for file_id, (file_resource_type, file_name) in file_storage.items():
-            child_file_data = FileData(file_name, file_id, 3, file_resource_type)
+            child_file_data = ForgeFileData(file_id)
+
+            print(f'Resource type: {file_resource_type}, file name: {file_name}')
+
+            # TODO: Checkwhy I can't set hex here but above I can
+            # child_file_data.add_info(hex(file_resource_type), file_name)
+
+            child_file_data.add_info(file_resource_type, file_name)
             child_file_data.parent = file_data
             file_data.children.append(child_file_data)
 
-    def parse_files_data(self, files_data: list[FileData]):
+    def parse_files_data(self, files_data: list[ForgeFileData]):
 
         print(f"Decompressing {self.forge_name}.")
 
@@ -225,7 +234,8 @@ class ForgeReader:
                 file_data: ForgeFileData = ForgeFileData(file_id)
 
                 if file_info:
-                    file_data.add_info(file_info[0], file_info[1])
+                    file_type = hex(file_info[0]).replace("0x", "").upper()
+                    file_data.add_info(file_type, file_info[1])
 
                 if raw_data:
                     file_data.add_raw_data(raw_data[0], raw_data[1])

@@ -1,5 +1,7 @@
-from model.files.tree.file_data import FileData
-from model.files.tree.files_tree import FileTree
+from model.files.tree.file_data_base import FileDataBase
+from model.files.tree.system_directory_data import SystemDirectoryData
+from model.files.tree.system_file_data import SystemFileData
+from model.forge.forge_file_data import ForgeFileData
 from model.forge.forge_files_finder import ForgeFilesFinder
 from model.forge.forge_reader import ForgeReader
 from view.view import View
@@ -10,58 +12,52 @@ class Controller:
         # TODO: Get from view
         self.game_path = "/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity"
         self.game_name = "Assassin's Creed Unity"
-
-        self.current_tree: FileTree = None
         self.forge_readers: dict[str, ForgeReader] = {}
 
         self.view = View(item_clicked_callback=self.handle_item_clicked)
         self.view.show()
 
         self.handle_game_path_changed(self.game_path)
-
         self.view.wait()
 
-    def reset_tree(self, tree: FileTree):
-        self.current_tree = tree
-        self.view.reset_tree(tree)
-
-    def update_tree(self, parent_name: str, node_data: FileData):
-        self.view.update_tree(parent_name, node_data)
+    def reset_tree(self):
+        self.view.reset_tree()
 
     def handle_game_path_changed(self, game_path: str):
         self.game_path = game_path
         self.game_name = game_path.split('/')[-1]
 
         forge_finder = ForgeFilesFinder(self.game_path)
-        forge_files = forge_finder.find()
+        forge_files = forge_finder.find_files()
+
+        game_directory_data = SystemDirectoryData(self.game_path)
+
+        self.reset_tree()
+        self.view.add_item(parent_data=None, node_data=game_directory_data)
 
         print(f'Found {len(forge_files)} forge files: {forge_files}')
 
-        new_tree = FileTree(self.game_name, 0)
+        for forge_file_data in forge_files:
+            self.view.add_item(game_directory_data, forge_file_data)
 
-        for forge_file in forge_files.values():
-            new_tree.add_child(self.game_name, forge_file, 0)
+    def handle_item_clicked(self, item: FileDataBase):
+        item_name = item.get_name_data()
+        item_type = item.get_type_data()
 
-        self.reset_tree(new_tree)
+        print(f'File: {str(item_name)} clicked')
 
-    def handle_item_clicked(self, item_name: str):
-        clicked_file_data: FileData = self.current_tree.find_file_by_name(item_name)
-        print(f'File: {str(clicked_file_data)} clicked')
-
-        if clicked_file_data is None:
-            print(f'File data not found for {item_name}')
-            return
-
-        if clicked_file_data.children:
+        if item.children:
             print(f'File {item_name} is already decompressed')
             return
 
-        if clicked_file_data.type == 'forge':
-            self.parse_forge(clicked_file_data)
-        else:
-            self.parse_forge_item(clicked_file_data)
+        # TODO: Add check to not parse already parsed forge item internal files
 
-    def parse_forge(self, file_data: FileData):
+        if item_type == 'forge':
+            self.parse_forge(item)
+        else:
+            self.parse_forge_item(item)
+
+    def parse_forge(self, file_data: SystemFileData):
         path = file_data.path
         print(f'Forge file path: {path}')
 
@@ -77,18 +73,18 @@ class Controller:
         for parsed_file in parsed_files:
             parsed_file.parent = file_data
             file_data.children.append(parsed_file)
-            self.update_tree(file_data.name, parsed_file)
+            self.view.add_item(file_data, parsed_file)
 
-    def parse_forge_item(self, file_data: FileData):
+    def parse_forge_item(self, file_data: ForgeFileData):
         name = file_data.name
         print(f'Forge item file name: {name}')
 
-        parent_forge_file_data: FileData = None
-        iterative_parent: FileData = file_data
+        parent_forge_file_data: SystemFileData = None
+        iterative_parent: FileDataBase = file_data
 
         while iterative_parent.parent is not None:
             iterative_parent = iterative_parent.parent
-            if iterative_parent.type == 'forge':
+            if type(iterative_parent) is SystemFileData:
                 parent_forge_file_data = iterative_parent
                 break
 
@@ -100,4 +96,4 @@ class Controller:
         forge_reader.parse_file_data(file_data)
 
         for child in file_data.children:
-            self.update_tree(name, child)
+            self.view.add_item(parent_data=file_data, node_data=child)
