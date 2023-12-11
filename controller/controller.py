@@ -11,7 +11,6 @@ class Controller:
     def __init__(self):
         # TODO: Get from view
         self.game_path = "/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity"
-        self.game_name = "Assassin's Creed Unity"
         self.forge_readers: dict[str, ForgeReader] = {}
 
         self.view = View(item_clicked_callback=self.handle_item_clicked)
@@ -25,12 +24,10 @@ class Controller:
 
     def handle_game_path_changed(self, game_path: str):
         self.game_path = game_path
-        self.game_name = game_path.split('/')[-1]
-
-        forge_finder = ForgeFilesFinder(self.game_path)
-        forge_files = forge_finder.find_files()
-
         game_directory_data = SystemDirectoryData(self.game_path)
+
+        forge_finder = ForgeFilesFinder(game_directory_data)
+        forge_files = forge_finder.find_files()
 
         self.reset_tree()
         self.view.add_item(parent_data=None, node_data=game_directory_data)
@@ -44,13 +41,14 @@ class Controller:
         item_name = item.get_name_data()
         item_type = item.get_type_data()
 
-        print(f'File: {str(item_name)} clicked')
-
-        if item.children:
-            print(f'File {item_name} is already decompressed')
+        if item.children or not item.parent:
+            print(f'File {item_name} is already decompressed or root')
             return
 
-        # TODO: Add check to not parse already parsed forge item internal files
+        # TODO: Add normal check to not parse already parsed forge item internal files
+        if item.get_name_data() == item.parent.get_name_data():
+            print(f'File {item_name} is already parsed')
+            return
 
         if item_type == 'forge':
             self.parse_forge(item)
@@ -71,8 +69,8 @@ class Controller:
         parsed_files = forge_reader.parse_forge_data()
 
         for parsed_file in parsed_files:
-            parsed_file.parent = file_data
-            file_data.children.append(parsed_file)
+            parsed_file.add_parent(file_data)
+            file_data.add_child(parsed_file)
             self.view.add_item(file_data, parsed_file)
 
     def parse_forge_item(self, file_data: ForgeFileData):

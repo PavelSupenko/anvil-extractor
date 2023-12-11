@@ -1,18 +1,22 @@
 import os
 
+from model.files.tree.system_directory_data import SystemDirectoryData
 from model.files.tree.system_file_data import SystemFileData
 
 
 class ForgeFilesFinder:
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, directory_data: SystemDirectoryData):
+        self.directory_data = directory_data
+        self.path = directory_data.path
 
     def find_files(self) -> list[SystemFileData]:
-        forge_files = self.find_paths()
+        forge_files_paths = self.find_paths()
         files_data = []
 
-        for forge_file_path in forge_files.values():
-            files_data.append(SystemFileData(forge_file_path))
+        for forge_file_path in forge_files_paths.values():
+            file_data = SystemFileData(forge_file_path)
+            file_data.add_parent(self.directory_data)
+            files_data.append(file_data)
 
         return files_data
 

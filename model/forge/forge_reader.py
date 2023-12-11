@@ -76,13 +76,11 @@ class ForgeReader:
         for file_id, (file_resource_type, file_name) in file_storage.items():
             child_file_data = ForgeFileData(file_id)
 
-            print(f'Resource type: {file_resource_type}, file name: {file_name}')
-
             # TODO: Checkwhy I can't set hex here but above I can
             # child_file_data.add_info(hex(file_resource_type), file_name)
 
             child_file_data.add_info(file_resource_type, file_name)
-            child_file_data.parent = file_data
+            child_file_data.add_parent(file_data)
             file_data.children.append(child_file_data)
 
     def parse_files_data(self, files_data: list[ForgeFileData]):
