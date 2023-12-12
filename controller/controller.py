@@ -1,9 +1,13 @@
+from model.export.export_binary_plugin import ExportBinaryPlugin
+from model.export.export_plugin_base import ExportPluginBase
+from model.export.texture_export_plugin import TextureExportPlugin
 from model.files.tree.file_data_base import FileDataBase
 from model.files.tree.system_directory_data import SystemDirectoryData
 from model.files.tree.system_file_data import SystemFileData
 from model.forge.forge_file_data import ForgeFileData
 from model.forge.forge_files_finder import ForgeFilesFinder
 from model.forge.forge_reader import ForgeReader
+from view.context_menu.export_context_menu_factory import ExportContextMenuFactory
 from view.view import View
 
 
@@ -13,7 +17,10 @@ class Controller:
         self.game_path = "/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity"
         self.forge_readers: dict[str, ForgeReader] = {}
 
-        self.view = View(item_clicked_callback=self.handle_item_clicked)
+        self.view = View(item_clicked_callback=self.handle_item_clicked,
+                         plugin_clicked_callback=self.handle_export_plugin_clicked,
+                         export_context_menu_factory=ExportContextMenuFactory(
+                             export_plugins=[ExportBinaryPlugin('output'), TextureExportPlugin('output')]))
         self.view.show()
 
         self.handle_game_path_changed(self.game_path)
@@ -36,6 +43,9 @@ class Controller:
 
         for forge_file_data in forge_files:
             self.view.add_item(game_directory_data, forge_file_data)
+
+    def handle_export_plugin_clicked(self, item: FileDataBase, plugin: ExportPluginBase):
+        print(f'Export plugin {plugin.plugin_name} on item: {item.get_name_data()}')
 
     def handle_item_clicked(self, item: FileDataBase):
         item_name = item.get_name_data()

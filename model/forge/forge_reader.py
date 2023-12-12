@@ -24,6 +24,10 @@ class ForgeReader:
 
         self._forge_data: ForgeData = None
 
+    @property
+    def forge_data(self) -> ForgeData:
+        return self._forge_data
+
     def parse_forge_data(self) -> list[ForgeFileData]:
         self._forge_data = self._parse_forge_data()
 

@@ -3,18 +3,29 @@ import os
 from typing import Callable
 
 from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import QPoint
 from PySide6.QtGui import QAction
 
+from model.export.export_plugin_base import ExportPluginBase
 from model.files.tree.file_data_base import FileDataBase
+from view.context_menu.export_context_menu_factory import ExportContextMenuFactory
 from view.status_bar import StatusBar
 from view.tree.tree_view import TreeView
+from view.tree.tree_view_item import TreeViewItem
 
 
 class View(QtWidgets.QApplication):
 
-    def __init__(self, item_clicked_callback: Callable[[FileDataBase], None]):
+    def __init__(self,
+                 item_clicked_callback: Callable[[FileDataBase], None],
+                 plugin_clicked_callback: Callable[[FileDataBase, ExportPluginBase], None],
+                 export_context_menu_factory: ExportContextMenuFactory,
+                 ):
         QtWidgets.QApplication.__init__(self)
-        # logging.info('Building GUI Window')
+
+        self.export_context_menu_factory = export_context_menu_factory
+        self.item_clicked_callback = item_clicked_callback
+        self.plugin_clicked_callback = plugin_clicked_callback
 
         # load the style
         self.icons = {}
@@ -54,7 +65,8 @@ class View(QtWidgets.QApplication):
         self.search_update.start()
 
         # file tree view
-        self.file_view = TreeView(self.central_widget, self.icons, item_clicked_callback)
+        self.file_view = TreeView(self.central_widget, self.icons, self.handle_item_clicked,
+                                  self.handle_item_right_clicked)
         self.file_view.setObjectName("file_view")
         self.vertical_layout.addWidget(self.file_view)
 
@@ -95,7 +107,7 @@ class View(QtWidgets.QApplication):
             status_bar_handler
         )
 
-        self.load_style('QDarkStyle')
+        self._load_style('QDarkStyle')
         self.translate_()
 
     def show(self):
@@ -116,7 +128,15 @@ class View(QtWidgets.QApplication):
     def add_item(self, parent_data: FileDataBase, node_data: FileDataBase):
         self.file_view.update_tree(parent_data, node_data)
 
-    def load_style(self, style_name: str):
+    def handle_item_clicked(self, item: TreeViewItem):
+        self.item_clicked_callback(item.file_data)
+
+    def handle_item_right_clicked(self, item: TreeViewItem, parent: TreeView, pos: QPoint):
+        context_menu = self.export_context_menu_factory.create(item=item, parent=parent,
+                                                               click_callback=self.plugin_clicked_callback)
+        context_menu.exec_(parent.mapToGlobal(pos))
+
+    def _load_style(self, style_name: str):
         resources_path = os.path.join(os.path.dirname(__file__), 'resources')
         style_path = os.path.join(resources_path, 'themes', style_name, 'style.qss')
         icons_path = os.path.join(resources_path, 'icons')
