@@ -1,4 +1,5 @@
 from model.files.tree.file_data_base import FileDataBase
+from model.files.tree.system_file_data import SystemFileData
 
 
 class ForgeFileData(FileDataBase):
@@ -29,3 +30,15 @@ class ForgeFileData(FileDataBase):
 
     def get_additional_data(self):
         return self.id
+
+    def get_parent_forge_file_data(self) -> SystemFileData:
+        parent_forge_file_data: SystemFileData = None
+        iterative_parent: FileDataBase = self
+
+        while iterative_parent.parent is not None:
+            iterative_parent = iterative_parent.parent
+            if type(iterative_parent) is SystemFileData:
+                parent_forge_file_data = iterative_parent
+                break
+
+        return parent_forge_file_data

@@ -1,0 +1,26 @@
+import importlib
+import inspect
+import pkgutil
+
+from model.export.export_plugin_base import ExportPluginBase
+
+
+def get_export_plugins(output_directory: str) -> list[ExportPluginBase]:
+    # Get the current package name
+    package_name = __name__
+
+    # Initialize an empty list to store instances of subclasses of ExportPluginBase
+    # Usage: from type_readers import instances
+    default_export_plugins = []
+
+    # Iterate through all modules in the current package
+    for loader, module_name, is_pkg in pkgutil.walk_packages(__path__):
+        if not is_pkg:  # If it's a package, continue the iteration
+            module = importlib.import_module(f"{package_name}.{module_name}")
+            for name, obj in inspect.getmembers(module):
+                if inspect.isclass(obj) and issubclass(obj, ExportPluginBase) and obj != ExportPluginBase:
+                    # If the object is a subclass of ExportPluginBase and not ExportPluginBase itself
+                    instance = obj(output_directory)  # Create an instance of the class
+                    default_export_plugins.append(instance)  # Add the instance to the list
+
+    return default_export_plugins

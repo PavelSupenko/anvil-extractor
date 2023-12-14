@@ -7,9 +7,9 @@ from model.forge.forge_reader import ForgeReader
 from model.game.game_data import GameData
 
 
-class ExportBinaryPlugin(ExportPluginBase):
-    target_type = '*'
-    plugin_name = 'Export Binary'
+class ExportTexturePlugin(ExportPluginBase):
+    file_type = 'A2B7E917'
+    plugin_name = 'Export DDS'
 
     def __init__(self, output_directory_path: str):
         super().__init__(output_directory_path)

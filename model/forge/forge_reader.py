@@ -1,6 +1,6 @@
 import struct
 from io import BytesIO
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import numpy
 
@@ -133,6 +133,30 @@ class ForgeReader:
         with open(self.path, "rb") as f:
             f.seek(offset)
             return f.read(size)
+
+    def get_decompressed_files_bytes(
+        self, file_data: ForgeFileData
+    ) -> Dict[str, bytes]:
+        """
+        Retrieve the bytes for each file in a given data file.
+        This function creates a dictionary mapping file identifiers to their respective byte data.
+        """
+
+        data_file_id = file_data.id
+
+        # Retrieve information about decompressed files associated with the data_file_id
+        decompressed_files_info = self.get_decompressed_files(data_file_id)
+
+        # Create an empty dictionary to store file ID to file bytes mapping
+        files_bytes_mapping = {}
+
+        # For each file ID and its associated data in the decompressed files information
+        for forge_file_id, forge_file_data in decompressed_files_info.items():
+            # Store the file ID as the key and its byte data (at index 2) as the value in the dictionary
+            files_bytes_mapping[forge_file_id] = forge_file_data[2]  # Assuming file_data is a list or tuple
+
+        # Return the created mapping of file IDs to their respective byte data
+        return files_bytes_mapping
 
     def _parse_forge_data(self) -> ForgeData:
         """Parse the forge file to load metadata and data file locations."""

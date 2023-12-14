@@ -7,9 +7,9 @@ from model.forge.forge_reader import ForgeReader
 from model.game.game_data import GameData
 
 
-class ExportBinaryPlugin(ExportPluginBase):
-    target_type = '*'
-    plugin_name = 'Export Binary'
+class ExportFormatPlugin(ExportPluginBase):
+    file_type = '*'
+    plugin_name = 'Export Format'
 
     def __init__(self, output_directory_path: str):
         super().__init__(output_directory_path)
@@ -18,13 +18,12 @@ class ExportBinaryPlugin(ExportPluginBase):
                          file_data: ForgeFileData, game_data: GameData):
 
         file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
+        file_path = os.path.join(self.output_directory_path, game_data.name, f'{file_data.name}_{file_id:016X}.format')
+
+        print(f'Exporting binary data to {file_path}')
+
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        f = open(file_path, "w")
+        # file_wrapper = FileFormatDataWrapper(file_bytes, self, f)
+
         print(file_bytes)
-
-        for file_item_id, file_item_bytes in file_bytes.items():
-            file_path = os.path.join(self.output_directory_path, game_data.name,
-                                     f'{file_data.name}_{file_id:016X}', f'{file_item_id}.bin')
-
-            print(f'Exporting binary data to {file_path}')
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            f = open(file_path, "wb")
-            f.write(file_item_bytes)

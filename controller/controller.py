@@ -1,12 +1,13 @@
-from model.export.export_binary_plugin import ExportBinaryPlugin
+from model.export import get_export_plugins
 from model.export.export_plugin_base import ExportPluginBase
-from model.export.texture_export_plugin import TextureExportPlugin
 from model.files.tree.file_data_base import FileDataBase
 from model.files.tree.system_directory_data import SystemDirectoryData
 from model.files.tree.system_file_data import SystemFileData
+from model.files.type_readers import get_default_type_readers
 from model.forge.forge_file_data import ForgeFileData
 from model.forge.forge_files_finder import ForgeFilesFinder
 from model.forge.forge_reader import ForgeReader
+from model.game.game_data import GameData
 from view.context_menu.export_context_menu_factory import ExportContextMenuFactory
 from view.view import View
 
@@ -14,24 +15,25 @@ from view.view import View
 class Controller:
     def __init__(self):
         # TODO: Get from view
-        self.game_path = "/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity"
+        self.game_data = None
         self.forge_readers: dict[str, ForgeReader] = {}
+
+        a = get_default_type_readers()
 
         self.view = View(item_clicked_callback=self.handle_item_clicked,
                          plugin_clicked_callback=self.handle_export_plugin_clicked,
                          export_context_menu_factory=ExportContextMenuFactory(
-                             export_plugins=[ExportBinaryPlugin('output'), TextureExportPlugin('output')]))
+                             export_plugins=get_export_plugins('output')))
         self.view.show()
-
-        self.handle_game_path_changed(self.game_path)
+        self.handle_game_path_changed("/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity")
         self.view.wait()
 
     def reset_tree(self):
         self.view.reset_tree()
 
     def handle_game_path_changed(self, game_path: str):
-        self.game_path = game_path
-        game_directory_data = SystemDirectoryData(self.game_path)
+        self.game_data = GameData(path=game_path, pre_header_length=1, file_id_datatype='Q', file_type_length=4)
+        game_directory_data = SystemDirectoryData(game_path)
 
         forge_finder = ForgeFilesFinder(game_directory_data)
         forge_files = forge_finder.find_files()
@@ -44,8 +46,24 @@ class Controller:
         for forge_file_data in forge_files:
             self.view.add_item(game_directory_data, forge_file_data)
 
-    def handle_export_plugin_clicked(self, item: FileDataBase, plugin: ExportPluginBase):
-        print(f'Export plugin {plugin.plugin_name} on item: {item.get_name_data()}')
+    def handle_export_plugin_clicked(self, file_data: FileDataBase, plugin: ExportPluginBase):
+        if type(file_data) is not ForgeFileData:
+            print(f'Export can be applied only to forge item files')
+            return
+
+        file_data: ForgeFileData = file_data
+
+        name = file_data.name
+        print(f'Export plugin {plugin.plugin_name} on item: {file_data.get_name_data()}')
+
+        parent_forge_file_data: SystemFileData = file_data.get_parent_forge_file_data()
+
+        if parent_forge_file_data is None:
+            print(f'Forge file not found for {name}')
+            return None
+
+        forge_reader = self.forge_readers[parent_forge_file_data.path]
+        plugin.execute(forge_reader, file_data, self.game_data)
 
     def handle_item_clicked(self, item: FileDataBase):
         item_name = item.get_name_data()
@@ -87,18 +105,11 @@ class Controller:
         name = file_data.name
         print(f'Forge item file name: {name}')
 
-        parent_forge_file_data: SystemFileData = None
-        iterative_parent: FileDataBase = file_data
-
-        while iterative_parent.parent is not None:
-            iterative_parent = iterative_parent.parent
-            if type(iterative_parent) is SystemFileData:
-                parent_forge_file_data = iterative_parent
-                break
+        parent_forge_file_data: SystemFileData = file_data.get_parent_forge_file_data()
 
         if parent_forge_file_data is None:
             print(f'Forge file not found for {name}')
-            return
+            return None
 
         forge_reader = self.forge_readers[parent_forge_file_data.path]
         forge_reader.parse_file_data(file_data)
