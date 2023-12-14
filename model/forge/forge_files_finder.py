@@ -1,7 +1,7 @@
 import os
 
-from model.files.tree.system_directory_data import SystemDirectoryData
-from model.files.tree.system_file_data import SystemFileData
+from model.tree.system_directory_data import SystemDirectoryData
+from model.tree.system_file_data import SystemFileData
 
 
 class ForgeFilesFinder:

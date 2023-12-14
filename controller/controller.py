@@ -1,8 +1,9 @@
+from games.acu.acu_game_data import ACUGameData
 from model.export import get_export_plugins
 from model.export.export_plugin_base import ExportPluginBase
-from model.files.tree.file_data_base import FileDataBase
-from model.files.tree.system_directory_data import SystemDirectoryData
-from model.files.tree.system_file_data import SystemFileData
+from model.tree import FileDataBase
+from model.tree.system_directory_data import SystemDirectoryData
+from model.tree.system_file_data import SystemFileData
 from model.files.type_readers import get_default_type_readers
 from model.forge.forge_file_data import ForgeFileData
 from model.forge.forge_files_finder import ForgeFilesFinder
@@ -32,7 +33,7 @@ class Controller:
         self.view.reset_tree()
 
     def handle_game_path_changed(self, game_path: str):
-        self.game_data = GameData(path=game_path, pre_header_length=1, file_id_datatype='Q', file_type_length=4)
+        self.game_data = ACUGameData(path=game_path)
         game_directory_data = SystemDirectoryData(game_path)
 
         forge_finder = ForgeFilesFinder(game_directory_data)

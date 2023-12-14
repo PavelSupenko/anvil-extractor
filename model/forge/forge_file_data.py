@@ -1,5 +1,5 @@
-from model.files.tree.file_data_base import FileDataBase
-from model.files.tree.system_file_data import SystemFileData
+from model.tree import FileDataBase
+from model.tree.system_file_data import SystemFileData
 
 
 class ForgeFileData(FileDataBase):

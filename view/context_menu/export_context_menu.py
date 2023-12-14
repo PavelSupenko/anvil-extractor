@@ -2,7 +2,7 @@ from typing import Callable
 
 from PySide6.QtWidgets import QMenu, QTreeWidget
 
-from model.files.tree.file_data_base import FileDataBase
+from model.tree import FileDataBase
 from view.tree.tree_view_item import TreeViewItem
 
 

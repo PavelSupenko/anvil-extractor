@@ -7,6 +7,7 @@ import numpy
 from model.compression.compressor import Compressor
 from model.forge.forge_data import ForgeData
 from model.forge.forge_file_data import ForgeFileData
+from model.game.game_data import GameData
 
 
 class ForgeReader:
@@ -14,11 +15,10 @@ class ForgeReader:
     NonContainerDataFiles = {16, 145}
     CompressionMarker = b"\x33\xAA\xFB\x57\x99\xFA\x04\x10"
 
-    def __init__(self, path: str, data_file_format: int):
+    def __init__(self, path: str, game_data: GameData):
         self.compressor = Compressor()
 
-        # 0=[AC1], 1=[AC2, AC2B, AC2R, AC3MP, AC4MP], 2=[AC3, AC3L, ACRo], 3=[ACU]
-        self.data_file_format = data_file_format
+        self.data_file_format = game_data.data_file_format
         self.path = path
         self.forge_name = path.split('/')[-1].split('.')[0]
 

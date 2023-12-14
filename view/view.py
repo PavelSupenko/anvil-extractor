@@ -7,7 +7,7 @@ from PySide6.QtCore import QPoint
 from PySide6.QtGui import QAction
 
 from model.export.export_plugin_base import ExportPluginBase
-from model.files.tree.file_data_base import FileDataBase
+from model.tree import FileDataBase
 from view.context_menu.export_context_menu_factory import ExportContextMenuFactory
 from view.status_bar import StatusBar
 from view.tree.tree_view import TreeView

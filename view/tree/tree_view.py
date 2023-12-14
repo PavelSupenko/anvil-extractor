@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QIcon
 from PySide6 import QtWidgets
 
-from model.files.tree.file_data_base import FileDataBase
+from model.tree import FileDataBase
 from view.tree.tree_view_item import TreeViewItem
 
 
