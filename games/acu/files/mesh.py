@@ -5,7 +5,6 @@ from pyUbiForge2.api.files.mesh import BaseMesh
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
 
-from pyUbiForge2.games.ACU import register_file_reader
 
 #           vertex coords           scale factor            normals                   ?            vertex texture coords            ?               bone numbers            bone weights                  ?
 VertTableTypes = {
@@ -28,7 +27,7 @@ class Reader(BaseMesh, BaseFile):
             model_file: FileDataWrapper
     ):
         BaseMesh.__init__(self)
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
 
         model_file.read_bytes(1)  # skip an empty byte
         self.type = model_file.read_bytes(4)

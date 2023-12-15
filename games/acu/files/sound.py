@@ -1,16 +1,15 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU import register_file_reader
 
 
-@register_file_reader('83EC6C6D')
 class Reader(BaseFile):
+    ResourceType = 0x83EC6C6D
     def __init__(
             self,
             file_id: int,
             file: FileDataWrapper
     ):
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         type_id_or_something = file.read_uint_32()
         assert 0 <= file.read_uint_8() <= 1, "check byte should be 0 or 1"
         file_name_size = file.read_uint_32()

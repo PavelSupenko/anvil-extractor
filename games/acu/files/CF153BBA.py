@@ -1,16 +1,15 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU import register_file_reader
 
 
-@register_file_reader('CF153BBA')
 class Reader(BaseFile):
+    ResourceType = 0xCF153BBA
     def __init__(
             self,
             file_id: int,
             file: FileDataWrapper
     ):
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         file.read_bytes(1)
         file.read_file_id()  # same as the top level parent
         count = file.read_uint_32()

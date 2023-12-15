@@ -1,17 +1,16 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU import register_file_reader
-from pyUbiForge2.api.files.armature import Bone
 
 
-@register_file_reader('95741049')
 class Reader(Bone):
+    ResourceType = 0x95741049
+
     def __init__(
             self,
             file_id: int,
             file: FileDataWrapper
     ):
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         self.bone_id = file.read_resource_type()
 
         if file.read_uint_8() != 3:

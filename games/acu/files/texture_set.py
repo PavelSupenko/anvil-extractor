@@ -1,6 +1,5 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU import register_file_reader
 from pyUbiForge2.api.files.texture import Material
 import logging
 
@@ -13,7 +12,7 @@ class Reader(BaseFile, Material):
             file: FileDataWrapper
     ):
 
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         Material.__init__(self, None)
 
         texture_table = file.read_numpy([('', '<u2'), ('texture_id', '<u8')], 120)

@@ -1,16 +1,15 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU import register_file_reader
 
 
-@register_file_reader('21795599')
 class Reader(BaseFile):
+    ResourceType = 0x21795599
     def __init__(
             self,
             file_id: int,
             file: FileDataWrapper
     ):
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         for length in [2, 2, 1, 1, 4, 2, 2]:
             total_count = file.read_uint_32()
             file.indent()

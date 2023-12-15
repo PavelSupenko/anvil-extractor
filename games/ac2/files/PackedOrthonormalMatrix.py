@@ -1,9 +1,7 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from . import register_file_reader
 
 
-@register_file_reader
 class PackedOrthonormalMatrix(BaseFile):
     ResourceType = 0x05358B33
     

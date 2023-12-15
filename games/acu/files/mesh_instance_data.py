@@ -1,18 +1,17 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU import register_file_reader
 import numpy
 import logging
 
 
-@register_file_reader('536E963B')
 class Reader(BaseFile):
+    ResourceType = 0x536E963B
     def __init__(
             self,
             file_id: int,
             file: FileDataWrapper
     ):
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         file.read_bytes(1)
         self.mesh_id = file.read_file_id()
         file.read_bytes(40)  # contains a compiled mesh instance 4368101B

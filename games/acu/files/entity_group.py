@@ -1,18 +1,17 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU import register_file_reader
 import numpy
 import logging
 
 
-@register_file_reader('3F742D26')
 class Reader(BaseFile):
+    ResourceType = 0x3F742D26
     def __init__(
             self,
             file_id: int,
             file: FileDataWrapper
     ):
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         check_byte = file.read_uint_8()  # checkbyte 03 to continue (other stuff to not? have seen 00 with data after)
         if check_byte == 0:
             for _ in range(2):

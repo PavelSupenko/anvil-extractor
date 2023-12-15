@@ -1,15 +1,14 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU import register_file_reader
 
 
-@register_file_reader('13237FE9')
 class Reader(BaseFile):
+    ResourceType = 0x13237FE9
     def __init__(
             self,
             file_id: int,
             file: FileDataWrapper
     ):
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         file.read_bytes(48)
         file.read_bytes(file.read_uint_32())

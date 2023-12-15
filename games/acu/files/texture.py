@@ -1,6 +1,5 @@
 import struct
 from pyUbiForge2.api.files.texture import BaseTexture
-from pyUbiForge2.games.ACU import register_file_reader
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
 
@@ -16,7 +15,7 @@ class Reader(BaseTexture, BaseFile):
             texture_file: FileDataWrapper
     ):
 
-        BaseFile.__init__(self, file_id)
+        BaseFile.__init__(self, file_id, file)
         BaseTexture.__init__(self)
         self.dwSize = b'\x7C\x00\x00\x00'  # 124
         DDSD_CAPS = DDSD_HEIGHT = DDSD_WIDTH = DDSD_PIXELFORMAT = True
