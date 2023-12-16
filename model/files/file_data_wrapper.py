@@ -6,13 +6,14 @@ import numpy
 
 from model.files.base_file import BaseFile
 from model.files.indent import Indent
+from model.game.game_data import GameData
 
 
 class FileDataWrapper(BytesIO):
     def __init__(
             self,
             file: bytes,
-            game: "BaseGame"
+            game: GameData
     ):
         assert isinstance(file, bytes), "File must be bytes"
         assert game.endianness in ('<', '>'), "Endianness marker must be \"<\" or \">\""
@@ -79,22 +80,10 @@ class FileDataWrapper(BytesIO):
         return self._read_struct(f'{chr_len}s')[0]
 
     def read_file_id(self) -> int:
-        return self._read_struct(self._game.FileIDType)[0]
+        return self._read_struct(self._game.file_id_datatype)[0]
 
     def read_resource_type(self) -> int:
-        return self._read_struct(self._game.ResourceDType)[0]
-
-    def read_header_file(self) -> Union["BaseFile", int]:
-        return self._game.read_header_file(self)
-
-    def read_file_switch(self) -> Union["BaseFile", int]:
-        return self._game.read_file_switch(self)
-
-    def read_file(self) -> "BaseFile":
-        return self._game.read_file(self)
-
-    def read_file_data(self, file_id: int, resource_type: int):
-        return self._game.read_file_data(self, file_id, resource_type)
+        return self._read_struct(self._game.resource_d_type)[0]
 
     def read_numpy(self, dtype, binary_size: int) -> numpy.ndarray:
         binary = self.read(binary_size)
@@ -107,3 +96,53 @@ class FileDataWrapper(BytesIO):
 
     def clever_format(self):
         return self.read()
+
+    # TODO: below methods is from game class of original project. Should be moved elsewhere
+
+    def read_main_file(self) -> "BaseFile":
+        assert self.read_uint_8() == 1, "Expected the first byte to be 1"
+        return self.read_file()
+
+    def read_header_file(self) -> Union["BaseFile", int]:
+        """Read a file with an extra byte before."""
+        switch = self.read_uint_8()
+        if switch == 0:
+            return self.read_file()
+        elif switch == 2:
+            count = self.read_uint_32()
+            raise NotImplementedError("Header switch == 2")  # might be nothing
+        elif switch == 3:
+            return 0
+        else:
+            raise NotImplementedError(f"Header switch == {switch}")
+
+    def read_file_switch(self) -> Union["BaseFile", int]:
+        switch = self.read_uint_8()
+        if switch == 0:
+            return self.read_header_file()
+        elif 1 <= switch <= 2:
+            return self.read_file_id()
+        elif switch == 3:
+            return 0
+        elif switch == 4:
+            return self.read_header_file()
+        elif switch == 5:
+            return self.read_file_id()
+        raise Exception("I am not quite sure what to do here.")
+
+    def read_file(self) -> "BaseFile":
+        """Read a file id, resource type and the file payload and return the data packed into a class."""
+        file_id = self.read_file_id()
+        resource_type = self.read_resource_type()
+        return self.read_file_data(file_id, resource_type)
+
+    def read_file_data(self, file_id: int, resource_type: int) -> "BaseFile":
+        """Read the file payload for a given resource type."""
+        self.call_stack.append(resource_type)
+        if resource_type in self._game.file_readers:
+            reader: BaseFile = self._game.file_readers[resource_type]()
+            data = reader.read(file_id, self)
+        else:
+            raise TypeError(f"{resource_type:08X}")
+        self.call_stack.pop()
+        return data
