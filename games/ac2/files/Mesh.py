@@ -5,12 +5,7 @@ from model.files.file_data_wrapper import FileDataWrapper
 class Mesh(BaseFile):
     ResourceType = 0x415D9568
 
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        super().__init__(file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         self.graphic_object = file.read_file_data(0, 0xEC6AC357)
 
         count1 = file.read_uint_32()

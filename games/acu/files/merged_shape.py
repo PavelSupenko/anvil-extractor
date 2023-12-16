@@ -6,13 +6,8 @@ import logging
 
 class Reader(BaseFile):
     ResourceType = 0x2D675BA2
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
 
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         count1 = file.read_uint_32()  # possibly a count
         if count1 != 0:
             logging.warning('"2D675BA2" count1 is not 0')

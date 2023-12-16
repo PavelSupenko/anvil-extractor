@@ -4,12 +4,7 @@ from model.files.file_data_wrapper import FileDataWrapper
 
 class Reader(BaseFile):
     ResourceType = 0x9336FC8B
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         file.read_bytes(8 * 4)  # FFF0FFF0
         count1 = file.read_uint_32()
         self.count = count1

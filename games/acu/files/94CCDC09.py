@@ -4,12 +4,7 @@ from model.files.file_data_wrapper import FileDataWrapper
 
 class Reader(BaseFile):
     ResourceType = 0x94CCDC09
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         file.read_bytes(33)
         for _ in range(file.read_uint_32()):
             assert file.read_uint_8() == 0, "check byte failed"

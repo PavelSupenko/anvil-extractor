@@ -4,12 +4,7 @@ from model.files.file_data_wrapper import FileDataWrapper
 
 class Reader(BaseFile):
     ResourceType = 0x21795599
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         for length in [2, 2, 1, 1, 4, 2, 2]:
             total_count = file.read_uint_32()
             file.indent()

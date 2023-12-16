@@ -3,7 +3,7 @@ from typing import ForwardRef
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QTreeWidgetItem
 
-from model.tree import FileDataBase
+from model.tree.file_data_base import FileDataBase
 
 
 class TreeViewItem(QTreeWidgetItem):

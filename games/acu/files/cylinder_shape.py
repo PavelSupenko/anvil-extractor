@@ -4,12 +4,7 @@ from model.files.file_data_wrapper import FileDataWrapper
 
 class Reader(BaseFile):
     ResourceType = 0x445B37F9
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         file.read_struct('5f')
         file.read_struct('5f')
         file.read_bytes(10)

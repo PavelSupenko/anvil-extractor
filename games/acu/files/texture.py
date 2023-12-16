@@ -1,22 +1,15 @@
 import struct
-from pyUbiForge2.api.files.texture import BaseTexture
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
+from model.files.texture import BaseTexture
 
 
-# import logging
-
-
-@register_file_reader('A2B7E917')
 class Reader(BaseTexture, BaseFile):
-    def __init__(
-            self,
-            file_id: int,
-            texture_file: FileDataWrapper
-    ):
 
-        BaseFile.__init__(self, file_id, file)
+    def __init__(self):
         BaseTexture.__init__(self)
+
+    def read(self, file_id: int, texture_file: FileDataWrapper):
         self.dwSize = b'\x7C\x00\x00\x00'  # 124
         DDSD_CAPS = DDSD_HEIGHT = DDSD_WIDTH = DDSD_PIXELFORMAT = True
         # (probably should be set based on the data)

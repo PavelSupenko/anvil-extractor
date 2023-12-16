@@ -1,17 +1,12 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
 from typing import List
-from pyUbiForge2.games.ACU.files.D77FB524 import Reader as Fake
+from games.acu.files.D77FB524 import Reader as Fake
 
 
 class Reader(BaseFile):
     ResourceType = 0xC69A7F31
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         fake_count = file.read_uint_32()
         self.fakes: List[Fake] = []
         for _ in range(fake_count):

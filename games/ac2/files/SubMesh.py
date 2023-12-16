@@ -5,12 +5,7 @@ from model.files.file_data_wrapper import FileDataWrapper
 class SubMesh(BaseFile):
     ResourceType = 0x5755DE7F
     
-    def __init__(
-        self,
-        file_id: int,
-        file: FileDataWrapper
-    ):
-        super().__init__(file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         file.read_uint_32()
         bcount = file.read_uint_32()
         file.read_bytes(bcount*4)

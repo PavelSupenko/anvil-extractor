@@ -1,10 +1,9 @@
 import numpy
 import logging
 
-from pyUbiForge2.api.files.mesh import BaseMesh
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-
+from model.files.mesh import BaseMesh
 
 #           vertex coords           scale factor            normals                   ?            vertex texture coords            ?               bone numbers            bone weights                  ?
 VertTableTypes = {
@@ -19,16 +18,10 @@ VertTableTypes = {
 }
 
 
-@register_file_reader('415D9568')
 class Reader(BaseMesh, BaseFile):
-    def __init__(
-            self,
-            file_id: int,
-            model_file: FileDataWrapper
-    ):
-        BaseMesh.__init__(self)
-        BaseFile.__init__(self, file_id, file)
+    ResourceType = 0x415D9568
 
+    def read(self, file_id: int, model_file: FileDataWrapper):
         model_file.read_bytes(1)  # skip an empty byte
         self.type = model_file.read_bytes(4)
         model_file.read_bytes(1)

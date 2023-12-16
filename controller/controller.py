@@ -1,14 +1,12 @@
 from games.acu.acu_game_data import ACUGameData
 from model.export import get_export_plugins
 from model.export.export_plugin_base import ExportPluginBase
-from model.tree import FileDataBase
+from model.tree.file_data_base import FileDataBase
 from model.tree.system_directory_data import SystemDirectoryData
 from model.tree.system_file_data import SystemFileData
-from model.files.type_readers import get_default_type_readers
 from model.forge.forge_file_data import ForgeFileData
 from model.forge.forge_files_finder import ForgeFilesFinder
 from model.forge.forge_reader import ForgeReader
-from model.game.game_data import GameData
 from view.context_menu.export_context_menu_factory import ExportContextMenuFactory
 from view.view import View
 
@@ -19,7 +17,7 @@ class Controller:
         self.game_data = None
         self.forge_readers: dict[str, ForgeReader] = {}
 
-        a = get_default_type_readers()
+        # a = get_default_type_readers()
 
         self.view = View(item_clicked_callback=self.handle_item_clicked,
                          plugin_clicked_callback=self.handle_export_plugin_clicked,
@@ -92,7 +90,7 @@ class Controller:
             print(f'Forge file {path} is already parsed')
             return
 
-        forge_reader = ForgeReader(path, data_file_format=3)
+        forge_reader = ForgeReader(path, self.game_data)
         self.forge_readers[path] = forge_reader
 
         parsed_files = forge_reader.parse_forge_data()

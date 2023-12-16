@@ -1,20 +1,17 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.api.files.texture import Material
 import logging
 
+from model.files.material import Material
 
-@register_file_reader('D70E6670')
+
 class Reader(BaseFile, Material):
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
+    ResourceType = 0xD70E6670
 
-        BaseFile.__init__(self, file_id, file)
+    def __init__(self):
         Material.__init__(self, None)
 
+    def read(self, file_id: int, file: FileDataWrapper):
         texture_table = file.read_numpy([('', '<u2'), ('texture_id', '<u8')], 120)
         self.diffuse, self.normal, self.specular, \
             self.height, tex5, self.transmission, tex7, \

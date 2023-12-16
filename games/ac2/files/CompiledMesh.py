@@ -4,13 +4,8 @@ from model.files.file_data_wrapper import FileDataWrapper
 
 class CompiledMesh(BaseFile):
     ResourceType = 0xFC9E1595
-    
-    def __init__(
-        self,
-        file_id: int,
-        file: FileDataWrapper
-    ):
-        super().__init__(file_id, file)
+
+    def read(self, file_id: int, file: FileDataWrapper):
         # file.read_file_data(0, 0x85D90806)
         bcount = file.read_uint_32()
         file.read_bytes(bcount)

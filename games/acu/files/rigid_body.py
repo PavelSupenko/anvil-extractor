@@ -5,12 +5,7 @@ import numpy
 
 class Reader(BaseFile):
     ResourceType = 0x228F402A
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         file.read_file()
         file.read_file_id()
         file.read_bytes(2)

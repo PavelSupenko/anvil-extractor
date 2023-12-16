@@ -1,18 +1,12 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
 import numpy
-import logging
 
 
 class Reader(BaseFile):
     ResourceType = 0x0984415E
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
 
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         check_byte = file.read_uint_8()  # checkbyte 03 to continue (other stuff to not? have seen 00 with data after)
         if check_byte == 0:
             for _ in range(2):

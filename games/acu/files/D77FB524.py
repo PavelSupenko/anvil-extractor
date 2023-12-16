@@ -1,16 +1,12 @@
 from model.files.base_file import BaseFile
 from model.files.file_data_wrapper import FileDataWrapper
-from pyUbiForge2.games.ACU.files.entity import Reader as Entity
+from games.acu.files.entity import Reader as Entity
 
 
 class Reader(BaseFile):
     ResourceType = 0xD77FB524
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        BaseFile.__init__(self, file_id, file)
+
+    def read(self, file_id: int, file: FileDataWrapper):
         file.read_bytes(2)
         self.entity: Entity = file.read_file()
         count1 = file.read_uint_32()

@@ -3,7 +3,7 @@ from typing import Callable
 from PySide6.QtWidgets import QMenu
 
 from model.export.export_plugin_base import ExportPluginBase
-from model.tree import FileDataBase
+from model.tree.file_data_base import FileDataBase
 from view.context_menu.export_context_menu import ExportContextMenu
 from view.tree.tree_view import TreeView
 from view.tree.tree_view_item import TreeViewItem

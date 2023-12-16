@@ -1,16 +1,11 @@
-from model.files.base_file import BaseFile
+from model.files.bone import Bone
 from model.files.file_data_wrapper import FileDataWrapper
 
 
 class Reader(Bone):
     ResourceType = 0x95741049
 
-    def __init__(
-            self,
-            file_id: int,
-            file: FileDataWrapper
-    ):
-        BaseFile.__init__(self, file_id, file)
+    def read(self, file_id: int, file: FileDataWrapper):
         self.bone_id = file.read_resource_type()
 
         if file.read_uint_8() != 3:
