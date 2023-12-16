@@ -5,6 +5,7 @@ from model.files.texture import BaseTexture
 
 
 class Reader(BaseTexture, BaseFile):
+    ResourceType = 0xA2B7E917
 
     def __init__(self):
         BaseTexture.__init__(self)

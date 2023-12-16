@@ -13,14 +13,22 @@ class FileDataWrapper(BytesIO):
     def __init__(
             self,
             file: bytes,
-            game: GameData
+            game_data: GameData
     ):
         assert isinstance(file, bytes), "File must be bytes"
-        assert game.endianness in ('<', '>'), "Endianness marker must be \"<\" or \">\""
+        assert game_data.endianness in ('<', '>'), "Endianness marker must be \"<\" or \">\""
         super().__init__(file)
-        self._game = game
-        self._endianness = game.endianness
+        self._game_data = game_data
+        self._endianness = game_data.endianness
         self._call_stack: List[int] = []
+
+        self.read_pre_data_header()
+
+    def read_pre_data_header(self):
+        header = self.read_uint_8()
+        assert header == 1, "Expected the first byte to be 1"
+        file_id = self.read_file_id()
+        resource_type = self.read_resource_type()
 
     @property
     def indent(self):
@@ -80,10 +88,10 @@ class FileDataWrapper(BytesIO):
         return self._read_struct(f'{chr_len}s')[0]
 
     def read_file_id(self) -> int:
-        return self._read_struct(self._game.file_id_datatype)[0]
+        return self._read_struct(self._game_data.file_id_datatype)[0]
 
     def read_resource_type(self) -> int:
-        return self._read_struct(self._game.resource_d_type)[0]
+        return self._read_struct(self._game_data.resource_d_type)[0]
 
     def read_numpy(self, dtype, binary_size: int) -> numpy.ndarray:
         binary = self.read(binary_size)
@@ -139,8 +147,10 @@ class FileDataWrapper(BytesIO):
     def read_file_data(self, file_id: int, resource_type: int) -> "BaseFile":
         """Read the file payload for a given resource type."""
         self.call_stack.append(resource_type)
-        if resource_type in self._game.file_readers:
-            reader: BaseFile = self._game.file_readers[resource_type]()
+        self._game_data.file_readers_factory.get_file_reader(resource_type)
+
+        if resource_type in self._game_data.file_readers:
+            reader: BaseFile = self._game_data.file_readers[resource_type]()
             data = reader.read(file_id, self)
         else:
             raise TypeError(f"{resource_type:08X}")

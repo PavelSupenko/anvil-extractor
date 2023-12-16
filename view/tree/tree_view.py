@@ -36,6 +36,31 @@ class TreeView(QtWidgets.QTreeWidget):
     def update_visual_tree(self):
         pass
 
+    def search(self, search_text: str):
+        self.filter_tree_items(search_text.strip())
+
+    def filter_tree_items(self, search_text):
+        self.blockSignals(True)  # Block signals temporarily to avoid triggering events while filtering
+        self.filter_children(self.invisibleRootItem(), search_text)
+        self.blockSignals(False)  # Unblock signals after filtering
+
+    def filter_children(self, item, search_text) -> bool:
+        result: bool = False
+        for i in range(item.childCount()):
+            child = item.child(i)
+            text = child.text(0)  # Assuming a single column tree widget
+            satisfy_search = search_text.lower() in text.lower()
+            any_child_satisfy_search: bool = self.filter_children(child, search_text)
+
+            should_be_shown = satisfy_search or any_child_satisfy_search
+
+            if should_be_shown:
+                result = True
+
+            child.setHidden(not should_be_shown)
+
+        return result
+
     def update_tree(self, parent_data: FileDataBase, node_data: FileDataBase):
         if parent_data is None:
             self._add_node_to_tree(self.invisibleRootItem(), node_data)

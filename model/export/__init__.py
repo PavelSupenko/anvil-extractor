@@ -3,9 +3,10 @@ import inspect
 import pkgutil
 
 from model.export.export_plugin_base import ExportPluginBase
+from model.files.file_readers_factory_base import FileReadersFactoryBase
 
 
-def get_export_plugins(output_directory: str) -> list[ExportPluginBase]:
+def get_export_plugins(output_directory: str, file_readers_factory_base: FileReadersFactoryBase) -> list[ExportPluginBase]:
     # Get the current package name
     package_name = __name__
 
@@ -20,7 +21,7 @@ def get_export_plugins(output_directory: str) -> list[ExportPluginBase]:
             for name, obj in inspect.getmembers(module):
                 if inspect.isclass(obj) and issubclass(obj, ExportPluginBase) and obj != ExportPluginBase:
                     # If the object is a subclass of ExportPluginBase and not ExportPluginBase itself
-                    instance = obj(output_directory)  # Create an instance of the class
+                    instance = obj(output_directory, file_readers_factory_base)  # Create an instance of the class
                     default_export_plugins.append(instance)  # Add the instance to the list
 
     return default_export_plugins

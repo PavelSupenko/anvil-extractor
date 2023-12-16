@@ -3,6 +3,13 @@ import inspect
 import pkgutil
 
 from model.files.base_file import BaseFile
+from model.files.file_readers_factory_base import FileReadersFactoryBase
+
+
+class ACUFileReadersFactory(FileReadersFactoryBase):
+    def __init__(self):
+        file_readers_map = get_file_readers_types_map()
+        super().__init__(file_readers_map)
 
 
 def get_file_readers_types_map() -> dict[int, type]:
@@ -22,13 +29,3 @@ def get_file_readers_types_map() -> dict[int, type]:
                     file_readers[obj.ResourceType] = obj  # Add the instance to the list
 
     return file_readers
-
-
-def create_file_reader(file_type: int) -> BaseFile:
-    if file_type in file_readers_map:
-        return file_readers_map[file_type]()
-    else:
-        raise Exception(f'File type {file_type:08X} not supported')
-
-
-file_readers_map = get_file_readers_types_map()

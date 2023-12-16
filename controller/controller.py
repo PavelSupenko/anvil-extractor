@@ -1,4 +1,5 @@
 from games.acu.acu_game_data import ACUGameData
+from games.acu.files import ACUFileReadersFactory
 from model.export import get_export_plugins
 from model.export.export_plugin_base import ExportPluginBase
 from model.tree.file_data_base import FileDataBase
@@ -22,7 +23,7 @@ class Controller:
         self.view = View(item_clicked_callback=self.handle_item_clicked,
                          plugin_clicked_callback=self.handle_export_plugin_clicked,
                          export_context_menu_factory=ExportContextMenuFactory(
-                             export_plugins=get_export_plugins('output')))
+                             export_plugins=get_export_plugins('output', ACUFileReadersFactory())))
         self.view.show()
         self.handle_game_path_changed("/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity")
         self.view.wait()

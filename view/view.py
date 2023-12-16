@@ -54,15 +54,12 @@ class View(QtWidgets.QApplication):
         self.search_box = QtWidgets.QLineEdit()
         self.search_box.setClearButtonEnabled(True)
         self.search_box.setObjectName("search_box")
+        self.search_box.textChanged.connect(self._change_search)
         self.horizontal_layout.addWidget(self.search_box, 2)
-        self.match_case = QtWidgets.QCheckBox('Match Case')
-        self.horizontal_layout.addWidget(self.match_case)
-        self.regex = QtWidgets.QCheckBox('Regex')
-        self.horizontal_layout.addWidget(self.regex)
-
-        self.search_update = QtCore.QTimer()
-        self.search_update.setInterval(150)
-        self.search_update.start()
+        # self.match_case = QtWidgets.QCheckBox('Match Case')
+        # self.horizontal_layout.addWidget(self.match_case)
+        # self.regex = QtWidgets.QCheckBox('Regex')
+        # self.horizontal_layout.addWidget(self.regex)
 
         # file tree view
         self.file_view = TreeView(self.central_widget, self.icons, self.handle_item_clicked,
@@ -135,6 +132,9 @@ class View(QtWidgets.QApplication):
         context_menu = self.export_context_menu_factory.create(item=item, parent=parent,
                                                                click_callback=self.plugin_clicked_callback)
         context_menu.exec_(parent.mapToGlobal(pos))
+
+    def _change_search(self, text: str):
+        self.file_view.search(text)
 
     def _load_style(self, style_name: str):
         resources_path = os.path.join(os.path.dirname(__file__), 'resources')

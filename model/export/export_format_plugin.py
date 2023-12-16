@@ -1,6 +1,7 @@
 import os
 
 from model.export.export_plugin_base import ExportPluginBase
+from model.files.file_readers_factory_base import FileReadersFactoryBase
 from model.forge.forge_data import ForgeData
 from model.forge.forge_file_data import ForgeFileData
 from model.forge.forge_reader import ForgeReader
@@ -11,8 +12,8 @@ class ExportFormatPlugin(ExportPluginBase):
     file_type = '*'
     plugin_name = 'Export Format'
 
-    def __init__(self, output_directory_path: str):
-        super().__init__(output_directory_path)
+    def __init__(self, output_directory_path: str, file_readers_factory: FileReadersFactoryBase):
+        super().__init__(output_directory_path, file_readers_factory)
 
     def execute_internal(self, forge_reader: ForgeReader, forge_data: ForgeData, file_id,
                          file_data: ForgeFileData, game_data: GameData):

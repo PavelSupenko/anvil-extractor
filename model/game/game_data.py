@@ -1,15 +1,14 @@
-import json
-import os
+from model.files.file_readers_factory_base import FileReadersFactoryBase
 
 
 class GameData:
 
     def __init__(self, path: str, pre_header_length: int = 1, file_id_datatype: str = 'Q', file_type_length: int = 4,
-                 data_file_format: int = 0, file_types: dict = None, file_readers: dict[int, type] = None,
+                 data_file_format: int = 0, file_types: dict = None, file_readers_factory: FileReadersFactoryBase = None,
                  endianness: str = '<'):
         # TODO: Create valid files tipe injecting not from json and file readers
         self.file_types = file_types
-        self.file_readers = file_readers
+        self.file_readers_factory = file_readers_factory
 
         self.pre_header_length = pre_header_length
         self.file_id_datatype = file_id_datatype

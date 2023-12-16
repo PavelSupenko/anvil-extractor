@@ -96,6 +96,9 @@ class ForgeReader:
 
         print(f"Finished decompressing {len(files_data)} forge item files.")
 
+    def get_decompressed_file(self, data_file_id, file_id):
+        return self.get_decompressed_files(data_file_id)[file_id]
+
     def get_decompressed_files(self, data_file_id):
         """Get the data file unpacked into its individual files.
         This is a dictionary that converts from the file id to the metadata and file bytes.
@@ -414,9 +417,9 @@ class ForgeReader:
             ]
         else:
             if self.data_file_format == 1:
-                fmt = "<IIh"
+                fmt = "<IIh" # TODO: maybe IIH ?
             elif 2 <= self.data_file_format <= 3:
-                fmt = "<QIh"
+                fmt = "<QIH"
             else:
                 raise Exception
             fmt_len = struct.calcsize(fmt)
