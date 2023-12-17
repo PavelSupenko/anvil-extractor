@@ -12,7 +12,7 @@ from model.game.game_data import GameData
 
 
 class ExportTexturePlugin(ExportPluginBase):
-    file_type = 'A2B7E917'
+    target_type = 'A2B7E917'
     file_type_int = 0xA2B7E917
     plugin_name = 'Export DDS'
 
@@ -23,8 +23,6 @@ class ExportTexturePlugin(ExportPluginBase):
                          file_data: ForgeFileData, game_data: GameData):
 
         file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
-        print(f'Texture bytes: {file_bytes}')
-
         file_path = os.path.join(self.output_directory_path, game_data.name,
                                      f'{file_data.name}_{file_id:016X}.dds')
 
@@ -36,10 +34,6 @@ class ExportTexturePlugin(ExportPluginBase):
         reader_texture: BaseTexture = reader
 
         bytes = file_bytes[file_id]
-
-        with open('output/texture-data.txt', 'wb') as fi:
-            fi.write(bytes)
-
         file: FileDataWrapper = FileDataWrapper(bytes, game_data)
 
         reader_file.read(file_id, file)

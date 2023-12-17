@@ -1,6 +1,7 @@
 import os
 
 from model.export.export_plugin_base import ExportPluginBase
+from model.files.file_data_wrapper import FileDataWrapper
 from model.files.file_readers_factory_base import FileReadersFactoryBase
 from model.forge.forge_data import ForgeData
 from model.forge.forge_file_data import ForgeFileData
@@ -9,7 +10,7 @@ from model.game.game_data import GameData
 
 
 class ExportFormatPlugin(ExportPluginBase):
-    file_type = '*'
+    target_type = '*'
     plugin_name = 'Export Format'
 
     def __init__(self, output_directory_path: str, file_readers_factory: FileReadersFactoryBase):
@@ -17,14 +18,13 @@ class ExportFormatPlugin(ExportPluginBase):
 
     def execute_internal(self, forge_reader: ForgeReader, forge_data: ForgeData, file_id,
                          file_data: ForgeFileData, game_data: GameData):
-
         file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
-        file_path = os.path.join(self.output_directory_path, game_data.name, f'{file_data.name}_{file_id:016X}.format')
 
-        print(f'Exporting binary data to {file_path}')
+        if file_bytes is None:
+            print(f"Failed to find file {file_id:016X}")
+            return
 
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        f = open(file_path, "w")
-        # file_wrapper = FileFormatDataWrapper(file_bytes, self, f)
+        file_path = os.path.join(self.output_directory_path, game_data.name,
+                                 f'{file_data.name}_{file_id:016X}.format')
 
-        print(file_bytes)
+        raise NotImplementedError()
