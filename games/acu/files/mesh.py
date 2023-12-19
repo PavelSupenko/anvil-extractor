@@ -43,7 +43,8 @@ class Reader(BaseMesh, BaseFile):
         model_file.read_bytes(1)
 
         model_file.read_file_id()
-        if model_file.read_resource_type() == int("FC9E1595", 16):  # this part should get moved to a different file technically
+        # TODO: this part should get moved to a different file technically
+        if model_file.read_resource_type() == int("FC9E1595", 16):
             model_file.read_bytes(4)
             model_file.out_file_write('Typeswitch\n')
             type_switch = model_file.read_uint_8()
@@ -76,13 +77,13 @@ class Reader(BaseMesh, BaseFile):
                     logging.warning(f'Not yet implemented!\n\nvertTableWidth = {vert_table_width}')
                     raise Exception()
 
-                self._vertices = vert_table['v'].astype(numpy.float) * numpy.sign(vert_table['sc'].reshape(-1, 1)) / 2 ** 15
+                self._vertices = vert_table['v'].astype(numpy.float64) * numpy.sign(vert_table['sc'].reshape(-1, 1)) / 2 ** 15
                 # self._vertices *= numpy.sum(bounding_box2, 0) / numpy.amax(self.vertices, 0)
 
-                self._texture_vertices = vert_table['vt'].astype(numpy.float) / 2048.0
+                self._texture_vertices = vert_table['vt'].astype(numpy.float64) / 2048.0
                 self._texture_vertices[:, 1] *= -1
                 if 'n' in vert_table.dtype.names:
-                    self._normals = vert_table['n'].astype(numpy.float)
+                    self._normals = vert_table['n'].astype(numpy.float64)
                 if 'bn' in vert_table.dtype.names:
                     self.bone_numbers = vert_table['bn']
                     self.bone_weights = vert_table['bw']

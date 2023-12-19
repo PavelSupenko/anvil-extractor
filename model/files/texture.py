@@ -45,6 +45,7 @@ class BaseTexture:
         self.dwCaps4 = b'\x00\x00\x00\x00'
         self.dwReserved2 = b'\x00\x00\x00\x00'
 
+    # TODO: Move this functional methods away from this data class
     @property
     def dds_string(self):
         return b'DDS ' + self.dwSize + self.dwFlags + self.dwHeight + self.dwWidth + self.dwPitchOrLinearSize + \

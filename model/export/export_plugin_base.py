@@ -15,7 +15,7 @@ class ExportPluginBase(ABC):
         self.output_directory_path = output_directory_path
         self.file_readers_factory = file_readers_factory
 
-    def execute(self, forge_reader: ForgeReader, file_data: ForgeFileData, game_data: GameData):
+    def execute(self, forge_reader: ForgeReader, forge_readers: list[ForgeReader], file_data: ForgeFileData, game_data: GameData):
         forge_data: ForgeData = forge_reader.forge_data
         file_id = file_data.id
 
@@ -28,8 +28,8 @@ class ExportPluginBase(ABC):
         file_data: ForgeFileData = forge_data.files_data[file_id]
         print(f'File name: {file_data.name}, type: {file_data.type}, id: {file_data.id}')
 
-        self.execute_internal(forge_reader, forge_data, file_id, file_data, game_data)
+        self.execute_internal(forge_reader, forge_readers, forge_data, file_id, file_data, game_data)
 
-    def execute_internal(self, forge_reader: ForgeReader, forge_data: ForgeData, file_id,
-                         file_data: ForgeFileData, game_data: GameData):
+    def execute_internal(self, forge_reader: ForgeReader, forge_readers: list[ForgeReader], forge_data: ForgeData,
+                         file_id, file_data: ForgeFileData, game_data: GameData):
         raise NotImplementedError()

@@ -11,4 +11,4 @@ class ACUGameData(GameData):
         super().__init__(path=path,
                          data_file_format=3,
                          file_types=file_types,
-                         file_readers_factory=ACUFileReadersFactory)
+                         file_readers_factory=ACUFileReadersFactory())

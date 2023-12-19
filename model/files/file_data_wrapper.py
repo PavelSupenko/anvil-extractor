@@ -4,7 +4,6 @@ from typing import List, Tuple, Any, Union
 
 import numpy
 
-from model.files.base_file import BaseFile
 from model.files.indent import Indent
 from model.game.game_data import GameData
 
@@ -15,6 +14,9 @@ class FileDataWrapper(BytesIO):
             file: bytes,
             game_data: GameData
     ):
+        self.resource_type = None
+        self.file_id = None
+
         assert isinstance(file, bytes), "File must be bytes"
         assert game_data.endianness in ('<', '>'), "Endianness marker must be \"<\" or \">\""
         super().__init__(file)
@@ -27,8 +29,8 @@ class FileDataWrapper(BytesIO):
     def read_pre_data_header(self):
         header = self.read_uint_8()
         assert header == 1, "Expected the first byte to be 1"
-        file_id = self.read_file_id()
-        resource_type = self.read_resource_type()
+        self.file_id = self.read_file_id()
+        self.resource_type = self.read_resource_type()
 
     @property
     def indent(self):
@@ -147,12 +149,12 @@ class FileDataWrapper(BytesIO):
     def read_file_data(self, file_id: int, resource_type: int) -> "BaseFile":
         """Read the file payload for a given resource type."""
         self.call_stack.append(resource_type)
-        self._game_data.file_readers_factory.get_file_reader(resource_type)
+        reader: 'BaseFile' = self._game_data.file_readers_factory.get_file_reader(resource_type)
 
-        if resource_type in self._game_data.file_readers:
-            reader: BaseFile = self._game_data.file_readers[resource_type]()
-            data = reader.read(file_id, self)
-        else:
+        if reader is None:
             raise TypeError(f"{resource_type:08X}")
+            return None
+
+        data = reader.read(file_id, self)
         self.call_stack.pop()
         return data

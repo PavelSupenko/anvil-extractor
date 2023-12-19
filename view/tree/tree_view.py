@@ -19,6 +19,8 @@ class TreeView(QtWidgets.QTreeWidget):
         QtWidgets.QTreeWidget.__init__(self, parent)
         # self.setHeaderHidden(True)
 
+        self.items_dictionary = {}
+
         self.item_clicked_callback = handle_item_clicked
         self.item_right_clicked_callback = handle_item_right_click
         self.icons = icons
@@ -28,6 +30,7 @@ class TreeView(QtWidgets.QTreeWidget):
         self.customContextMenuRequested.connect(self.handle_context_menu_event)
 
     def reset_tree(self):
+        self.items_dictionary = {}
         self.clear()
         self.setHeaderLabels(["Name", "File Type", "File ID"])
         self._set_column_proportions(0.5, 0.25, 0.25)  # Set proportional column widths
@@ -61,34 +64,17 @@ class TreeView(QtWidgets.QTreeWidget):
 
         return result
 
-    def update_tree(self, parent_data: FileDataBase, node_data: FileDataBase):
+    def add_item(self, parent_data: FileDataBase, node_data: FileDataBase):
         if parent_data is None:
             self._add_node_to_tree(self.invisibleRootItem(), node_data)
             return
 
-        parent_item = None
-        items = self.findItems(parent_data.get_name_data(), Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
-        for item in items:
-            if item.text(0) == parent_data.get_name_data():
-                parent_item = item
-                break
-
+        parent_item = self.items_dictionary[parent_data.get_name_data()]
         self._add_node_to_tree(parent_item, node_data)
 
-    def update_tree_by_name(self, parent_name: str, node_data: FileDataBase):
-        if parent_name == '':
-            self._add_node_to_tree(self.invisibleRootItem(), node_data)
-            return
-
-        parent_item = None
-        items = self.findItems(parent_name, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
-        for item in items:
-            if item.text(0) == parent_name:
-                parent_item = item
-                break
-
-        if parent_item:
-            self._add_node_to_tree(parent_item, node_data)
+    def add_items(self, parent_data: FileDataBase, nodes_data: list[FileDataBase]):
+        for node_data in nodes_data:
+            self.add_item(parent_data, node_data)
 
     def handle_item_clicked(self, item: TreeViewItem, column: int):
         self.item_clicked_callback(item)
@@ -123,6 +109,7 @@ class TreeView(QtWidgets.QTreeWidget):
         file_type = node_data.get_type_data()
 
         item: TreeViewItem = TreeViewItem(node_data, parent_item)
+        self.items_dictionary[node_data.get_name_data()] = item
 
         if file_type and file_type in self.icons:
             file_type_icon = QIcon(self.icons[file_type])

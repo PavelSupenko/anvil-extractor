@@ -45,6 +45,7 @@ class Controller:
 
         for forge_file_data in forge_files:
             self.view.add_item(game_directory_data, forge_file_data)
+            self.parse_forge(forge_file_data)
 
     def handle_export_plugin_clicked(self, file_data: FileDataBase, plugin: ExportPluginBase):
         if type(file_data) is not ForgeFileData:
@@ -62,8 +63,8 @@ class Controller:
             print(f'Forge file not found for {name}')
             return None
 
-        forge_reader = self.forge_readers[parent_forge_file_data.path]
-        plugin.execute(forge_reader, file_data, self.game_data)
+        file_forge_reader = self.forge_readers[parent_forge_file_data.path]
+        plugin.execute(file_forge_reader, list(self.forge_readers.values()), file_data, self.game_data)
 
     def handle_item_clicked(self, item: FileDataBase):
         item_name = item.get_name_data()
@@ -78,8 +79,8 @@ class Controller:
             print(f'File {item_name} is already parsed')
             return
 
-        if item_type == 'forge':
-            self.parse_forge(item)
+        if type(item) is not ForgeFileData:
+            print(f'File {item_name} is not a forge item')
         else:
             self.parse_forge_item(item)
 

@@ -119,11 +119,11 @@ class View(QtWidgets.QApplication):
     def reset_tree(self):
         self.file_view.reset_tree()
 
-    def add_item_by_name(self, parent_name: str, node_data: FileDataBase):
-        self.file_view.update_tree_by_name(parent_name, node_data)
-
     def add_item(self, parent_data: FileDataBase, node_data: FileDataBase):
-        self.file_view.update_tree(parent_data, node_data)
+        self.file_view.add_item(parent_data, node_data)
+
+    def add_items(self, parent_data: FileDataBase, nodes_data: list[FileDataBase]):
+        self.file_view.add_items(parent_data, nodes_data)
 
     def handle_item_clicked(self, item: TreeViewItem):
         self.item_clicked_callback(item.file_data)
