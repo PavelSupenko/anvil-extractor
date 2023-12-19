@@ -87,7 +87,7 @@ class ObjMtl:
 
         self.vertex_count += len(model.vertices)
 
-    def save_and_close(self, export_dds_handler: Callable[[int, str], None]) -> None:
+    def save_and_close(self, export_dds_handler: Callable[[int, str], str]) -> None:
         """
 		when called will create the mtl file and write its contents
 		when finished will close both mtl and self._obj

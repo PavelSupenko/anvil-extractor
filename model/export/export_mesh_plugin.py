@@ -34,8 +34,7 @@ class ExportMeshPlugin(ExportPluginBase):
         file_name = file_data.name
 
         file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
-        file_path = os.path.join(self.output_directory_path, game_data.name,
-                                     f'{file_name}_{file_id:016X}')
+        file_path = os.path.join(self.output_directory_path, game_data.name)
 
         print(f'Exporting mesh data to {file_path}')
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -73,7 +72,7 @@ class ExportMeshPlugin(ExportPluginBase):
         file_data = forge_reader.forge_data.files_data[file_id]
         file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
         file_path = os.path.join(self.output_directory_path, self.game_data.name,
-                                 f'{file_data.name}_{file_id:016X}.dds')
+                                 f'{file_data.name}.dds')
 
         print(f'Exporting texture data to {file_path}')
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -88,28 +87,5 @@ class ExportMeshPlugin(ExportPluginBase):
         reader_file.read(file_id, file)
         reader_texture.export_dds(file_path)
 
-    def export_mesh_dds_old(self, file_id, save_folder: str):
-
-        file_forge_reader = self.forge_reader
-
-        if file_id not in file_forge_reader.forge_data.files_data:
-            for forge_reader in self.forge_readers:
-                if file_id in forge_reader.forge_data.files_data:
-                    file_forge_reader = forge_reader
-                    break
-
-        file_bytes = file_forge_reader.get_decompressed_data_file(file_id)
-        file_path = os.path.join(self.output_directory_path, self.game_data.name,
-                                     f'{self.file_data.name}_{file_id:016X}.dds')
-
-        print(f'Exporting texture data to {file_path}')
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-        reader = self.file_readers_factory.get_file_reader(self.texture_type_int)
-        reader_file: BaseFile = reader
-        reader_texture: BaseTexture = reader
-
-        file: FileDataWrapper = FileDataWrapper(file_bytes, self.game_data)
-
-        reader_file.read(file_id, file)
-        reader_texture.export_dds(file_path)
+        # Used inside MtlObject to write texture path to .mtl file
+        return file_path
