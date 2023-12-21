@@ -38,7 +38,7 @@ class ForgeReader:
 
         return files_data
 
-    def parse_file_data(self, file_data: ForgeFileData):
+    def parse_file_data(self, file_data: ForgeFileData) -> None:
         if file_data.id not in self._forge_data.files_data:
             print(f"Skipping {self.forge_name} {file_data.id} {file_data.name} because it is not in the index.")
             return
@@ -53,12 +53,12 @@ class ForgeReader:
 
         if data_file_resource_type == 0:
             print(f"Skipping {self.forge_name} {data_file_id} {data_file_name} because type is 0.")
-            return []
+            return
         try:
             files = self.get_decompressed_files(data_file_id)
         except Exception as exception:
             print(f"Error loading {self.forge_name} {data_file_id} {data_file_name} with error {exception}.")
-            return []
+            return
 
         assert data_file_id in files
         # in some cases the info will be in the index but not the data file (non archive formats)

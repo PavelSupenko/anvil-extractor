@@ -54,7 +54,7 @@ class ExportMeshPlugin(ExportPluginBase):
 
         reader_file.read(file_id, file)
 
-        obj_handler = ObjMtl(file_name, file_path, forge_reader, forge_data, file_id, file_data, game_data,
+        obj_handler = ObjMtl(file_name, file_path, forge_reader, forge_readers, forge_data, file_id, file_data, game_data,
                              material_reader, texture_set_reader)
         obj_handler.export(mesh, file_name)
         obj_handler.save_and_close(self.export_mesh_dds)

@@ -5,7 +5,6 @@ from model.tree.system_file_data import SystemFileData
 class ForgeFileData(FileDataBase):
     def __init__(self, id):
         super().__init__()
-        # dictionary key in general, stored for convenience
         self.id = id
 
         self.name = ''
@@ -30,6 +29,16 @@ class ForgeFileData(FileDataBase):
 
     def get_additional_data(self):
         return self.id
+
+    def get_top_parent_forge_item_file_data(self) -> 'ForgeFileData':
+        top_parent_forge_file_data: 'ForgeFileData' = None
+        iterative_parent: FileDataBase = self
+
+        while type(iterative_parent.parent) is not SystemFileData:
+            iterative_parent = iterative_parent.parent
+
+        top_parent_forge_file_data = iterative_parent
+        return top_parent_forge_file_data
 
     def get_parent_forge_file_data(self) -> SystemFileData:
         parent_forge_file_data: SystemFileData = None

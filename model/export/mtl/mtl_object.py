@@ -20,9 +20,11 @@ class ObjMtl:
 	When the .save_and_close method is called these materials are written to the mtl file.
 	"""
 
-    def __init__(self, model_name: str, save_folder: str, forge_reader: ForgeReader, forge_data: ForgeData, file_id,
-                         file_data: ForgeFileData, game_data: GameData,
+    def __init__(self, model_name: str, save_folder: str, forge_reader: ForgeReader, forge_readers: list[ForgeReader],
+                 forge_data: ForgeData, file_id, file_data: ForgeFileData, game_data: GameData,
                  material_reader: 'BaseFile', texture_set_reader: 'BaseFile'):
+
+        self.forge_readers = forge_readers
         self.forge_reader = forge_reader
         self.forge_data = forge_data
         self.file_id = file_id
@@ -31,7 +33,7 @@ class ObjMtl:
         self.model_name = model_name
         self.save_folder = save_folder
         self.vertex_count = 0  # the number of vertices that have been processed. Used to calculate the vertex offset
-        self.mtl_handler = MaterialHandler(forge_reader, forge_data, file_id, file_data, game_data,
+        self.mtl_handler = MaterialHandler(forge_reader, forge_readers, forge_data, file_id, file_data, game_data,
                                            material_reader, texture_set_reader)  # used when generating the .mtl file
         self._group_name = {}  # used for getting a unique name for each model
         self.missing_no_exported = False

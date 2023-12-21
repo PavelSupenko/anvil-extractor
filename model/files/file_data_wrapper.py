@@ -155,6 +155,6 @@ class FileDataWrapper(BytesIO):
             raise TypeError(f"{resource_type:08X}")
             return None
 
-        data = reader.read(file_id, self)
+        reader.read(file_id, self)
         self.call_stack.pop()
-        return data
+        return reader
