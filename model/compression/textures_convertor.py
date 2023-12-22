@@ -11,6 +11,6 @@ class TexturesConvertor:
     def convert(self, args: str):
         if platform.system() != 'Windows':
             print(f'Cannot convert using DirectX library on non-Windows platforms for args: {args}')
-            pass
+            return
 
         os.system(f'{self.library_full_path} {args}')

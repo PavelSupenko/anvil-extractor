@@ -32,8 +32,8 @@ class TreeView(QtWidgets.QTreeWidget):
     def reset_tree(self):
         self.items_dictionary = {}
         self.clear()
-        self.setHeaderLabels(["Name", "File Type", "File ID"])
-        self._set_column_proportions(0.5, 0.25, 0.25)  # Set proportional column widths
+        self.setHeaderLabels(["Name", "File Type", "File ID", "Position", "Size"])
+        self._set_column_proportions(0.3, 0.2, 0.2, 0.15, 0.15)  # Set proportional column widths
         self._add_nodes_to_tree(self.invisibleRootItem(), [])
 
     def update_visual_tree(self):
@@ -69,7 +69,7 @@ class TreeView(QtWidgets.QTreeWidget):
             self._add_node_to_tree(self.invisibleRootItem(), node_data)
             return
 
-        parent_item = self.items_dictionary[parent_data.get_name_data()]
+        parent_item = self.items_dictionary[parent_data.full_path]
         self._add_node_to_tree(parent_item, node_data)
 
     def add_items(self, parent_data: FileDataBase, nodes_data: list[FileDataBase]):
@@ -90,26 +90,31 @@ class TreeView(QtWidgets.QTreeWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self._set_column_proportions(0.5, 0.25, 0.25)
+        self._set_column_proportions(0.3, 0.2, 0.2, 0.15, 0.15)
 
-    def _set_column_proportions(self, name_proportion, type_proportion, id_proportion):
+    def _set_column_proportions(self, name_proportion, type_proportion, id_proportion,
+                                position_proportion, size_proportion):
         total_width = self.width()
         name_width = total_width * name_proportion
         type_width = total_width * type_proportion
         id_width = total_width * id_proportion
+        position_width = total_width * position_proportion
+        size_width = total_width * size_proportion
         self.setColumnWidth(0, int(name_width))
         self.setColumnWidth(1, int(type_width))
         self.setColumnWidth(2, int(id_width))
+        self.setColumnWidth(3, int(position_width))
+        self.setColumnWidth(4, int(size_width))
 
     def _add_nodes_to_tree(self, parent_item: TreeViewItem, nodes_data: list[FileDataBase]):
         for node_data in nodes_data:
             self._add_node_to_tree(parent_item, node_data)
 
     def _add_node_to_tree(self, parent_item: TreeViewItem, node_data: FileDataBase):
-        file_type = node_data.get_type_data()
+        file_type = node_data.type
 
         item: TreeViewItem = TreeViewItem(node_data, parent_item)
-        self.items_dictionary[node_data.get_name_data()] = item
+        self.items_dictionary[node_data.full_path] = item
 
         if file_type and file_type in self.icons:
             file_type_icon = QIcon(self.icons[file_type])

@@ -8,7 +8,7 @@ from model.tree.file_data_base import FileDataBase
 
 class TreeViewItem(QTreeWidgetItem):
     def __init__(self, file_data: FileDataBase, parent_item: ForwardRef('TreeViewItem') = None):
-        super().__init__(parent_item, [file_data.get_name_data(), file_data.get_type_data(), file_data.get_additional_data()])
+        super().__init__(parent_item, file_data.properties)
 
         # main data
         self.file_data = file_data
@@ -27,9 +27,9 @@ class TreeViewItem(QTreeWidgetItem):
         self.update()
 
     def update(self):
-        self.setText(0, str(self.file_data.get_name_data()))
-        self.setText(1, str(self.file_data.get_type_data()))
-        self.setText(2, str(self.file_data.get_additional_data()))
+        for i in range(self.columnCount()):
+            if i < len(self.file_data.properties):
+                self.setText(i, str(self.file_data.properties[i]))
 
     def set_icon(self, icon: QIcon):
         self.setIcon(0, icon)

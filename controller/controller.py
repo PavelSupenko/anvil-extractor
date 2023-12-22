@@ -1,11 +1,12 @@
 from games.acu.acu_game_data import ACUGameData
 from games.acu.files import ACUFileReadersFactory
+from model.compression.compressor import Compressor
 from model.export import ExportPluginsFactory
 from model.export.export_plugin_base import ExportPluginBase
 from model.tree.file_data_base import FileDataBase
 from model.tree.system_directory_data import SystemDirectoryData
 from model.tree.system_file_data import SystemFileData
-from model.forge.forge_file_data import ForgeFileData
+from model.forge.forge_container_file_data import ForgeFileData, ForgeContainerFileData
 from model.forge.forge_files_finder import ForgeFilesFinder
 from model.forge.forge_reader import ForgeReader
 from view.context_menu.export_context_menu_factory import ExportContextMenuFactory
@@ -16,6 +17,7 @@ class Controller:
     def __init__(self):
         # TODO: Get from view
         self.game_data = None
+        self.compressor = Compressor()
         self.forge_readers: dict[str, ForgeReader] = {}
 
         # a = get_default_type_readers()
@@ -43,7 +45,8 @@ class Controller:
 
         print(f'Found {len(forge_files)} forge files: {forge_files}')
 
-        for forge_file_data in forge_files:
+        forge_files_sorted_by_size = sorted(forge_files, key=lambda x: x.size_mb, reverse=True)
+        for forge_file_data in forge_files_sorted_by_size:
             self.view.add_item(game_directory_data, forge_file_data)
             self.parse_forge(forge_file_data)
 
@@ -55,7 +58,7 @@ class Controller:
         file_data: ForgeFileData = file_data
 
         name = file_data.name
-        print(f'Export plugin {plugin.plugin_name} on item: {file_data.get_name_data()}')
+        print(f'Export plugin {plugin.plugin_name} on item: {file_data.full_path}')
 
         parent_forge_file_data: SystemFileData = file_data.get_parent_forge_file_data()
 
@@ -67,22 +70,19 @@ class Controller:
         plugin.execute(file_forge_reader, list(self.forge_readers.values()), file_data, self.game_data)
 
     def handle_item_clicked(self, item: FileDataBase):
-        item_name = item.get_name_data()
-        item_type = item.get_type_data()
+        item_name = item.name
 
-        if item.children or not item.parent:
-            print(f'File {item_name} is already decompressed or root')
+        if type(item) is not ForgeContainerFileData:
+            print(f'File {item_name} is not a forge container file')
             return
 
-        # TODO: Add normal check to not parse already parsed forge item internal files
-        if item.get_name_data() == item.parent.get_name_data():
-            print(f'File {item_name} is already parsed')
+        forge_item: ForgeContainerFileData = item
+
+        if forge_item.children:
+            print(f'File {item_name} is already decompressed')
             return
 
-        if type(item) is not ForgeFileData:
-            print(f'File {item_name} is not a forge item')
-        else:
-            self.parse_forge_item(item)
+        self.parse_forge_item(forge_item)
 
     def parse_forge(self, file_data: SystemFileData):
         path = file_data.path
@@ -92,7 +92,7 @@ class Controller:
             print(f'Forge file {path} is already parsed')
             return
 
-        forge_reader = ForgeReader(path, self.game_data)
+        forge_reader = ForgeReader(path, self.game_data, self.compressor)
         self.forge_readers[path] = forge_reader
 
         parsed_files = forge_reader.parse_forge_data()
@@ -102,7 +102,7 @@ class Controller:
             file_data.add_child(parsed_file)
             self.view.add_item(file_data, parsed_file)
 
-    def parse_forge_item(self, file_data: ForgeFileData):
+    def parse_forge_item(self, file_data: ForgeContainerFileData):
         name = file_data.name
         print(f'Forge item file name: {name}')
 

@@ -10,7 +10,7 @@ from model.files.file_readers_factory_base import FileReadersFactoryBase
 from model.files.mesh import BaseMesh
 from model.files.texture import BaseTexture
 from model.forge.forge_data import ForgeData
-from model.forge.forge_file_data import ForgeFileData
+from model.forge.forge_container_file_data import ForgeFileData
 from model.forge.forge_reader import ForgeReader
 from model.game.game_data import GameData
 

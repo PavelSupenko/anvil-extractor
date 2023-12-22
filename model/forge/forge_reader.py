@@ -6,7 +6,7 @@ import numpy
 
 from model.compression.compressor import Compressor
 from model.forge.forge_data import ForgeData
-from model.forge.forge_file_data import ForgeFileData
+from model.forge.forge_container_file_data import ForgeFileData, ForgeContainerFileData
 from model.game.game_data import GameData
 
 
@@ -15,8 +15,8 @@ class ForgeReader:
     NonContainerDataFiles = {16, 145}
     CompressionMarker = b"\x33\xAA\xFB\x57\x99\xFA\x04\x10"
 
-    def __init__(self, path: str, game_data: GameData):
-        self.compressor = Compressor()
+    def __init__(self, path: str, game_data: GameData, compressor: Compressor):
+        self.compressor = compressor
 
         self.data_file_format = game_data.data_file_format
         self.path = path
@@ -87,6 +87,8 @@ class ForgeReader:
             child_file_data.add_parent(file_data)
             file_data.children.append(child_file_data)
 
+            self.forge_data.files_items_data[file_id] = child_file_data
+
     def parse_files_data(self, files_data: list[ForgeFileData]):
 
         print(f"Decompressing {self.forge_name}.")
@@ -130,7 +132,7 @@ class ForgeReader:
         :return: The bytes as they appear on disk
         """
 
-        file_data: ForgeFileData = self._forge_data.files_data[data_file_id]
+        file_data: ForgeContainerFileData = self._forge_data.files_data[data_file_id]
         offset = file_data.raw_data_offset
         size = file_data.raw_data_size
         with open(self.path, "rb") as f:
@@ -260,14 +262,15 @@ class ForgeReader:
                 file_info = file_info_dict[file_id]
                 raw_data = raw_data_dict.get(file_id)  # Using get() to handle missing keys
 
-                file_data: ForgeFileData = ForgeFileData(file_id)
-
-                if file_info:
+                if raw_data:
+                    file_data: ForgeContainerFileData = ForgeContainerFileData(file_id)
                     file_type = hex(file_info[0]).replace("0x", "").upper()
                     file_data.add_info(file_type, file_info[1])
-
-                if raw_data:
                     file_data.add_raw_data(raw_data[0], raw_data[1])
+                else:
+                    file_data: ForgeFileData = ForgeFileData(file_id)
+                    file_type = hex(file_info[0]).replace("0x", "").upper()
+                    file_data.add_info(file_type, file_info[1])
 
                 # Combine file_info and raw_data into a nested tuple
                 files_data_dict[file_id] = file_data

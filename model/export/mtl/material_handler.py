@@ -1,7 +1,7 @@
 from model.files.file_data_wrapper import FileDataWrapper
 from model.files.material import Material
 from model.forge.forge_data import ForgeData
-from model.forge.forge_file_data import ForgeFileData
+from model.forge.forge_container_file_data import ForgeFileData
 from model.forge.forge_reader import ForgeReader
 from model.game.game_data import GameData
 
