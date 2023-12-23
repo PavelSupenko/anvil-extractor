@@ -1,4 +1,6 @@
 import os
+from functools import partial
+from operator import is_not
 
 import numpy
 
@@ -19,11 +21,21 @@ class ExportMeshPlugin(ExportPluginBase):
     target_type = 'AC2BBF68'
     file_type_int = 0xAC2BBF68
 
+    texture_type_int = 0xA2B7E917
+    entity_type_int = 0x0984415E
+    mesh_data_type_int = 0x415D9568
+
     # texture_type_int = 0xA2B7E917
     plugin_name = 'Export Data Block'
 
     def __init__(self, output_directory_path: str, file_readers_factory: FileReadersFactoryBase):
         super().__init__(output_directory_path, file_readers_factory)
+
+    def create_entyty_reader(self):
+        return self.file_readers_factory.get_file_reader(self.entity_type_int)
+
+    def create_mesh_data_reader(self):
+        return self.file_readers_factory.get_file_reader(self.mesh_data_type_int)
 
     def execute_internal(self, forge_reader: ForgeReader, forge_readers: list[ForgeReader], forge_data: ForgeData,
                          file_id, file_data: ForgeFileData, game_data: GameData):
@@ -43,13 +55,6 @@ class ExportMeshPlugin(ExportPluginBase):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         reader = self.file_readers_factory.get_file_reader(self.file_type_int)
-        material_reader = self.file_readers_factory.get_file_reader(0x85C817C3)
-        texture_set_reader = self.file_readers_factory.get_file_reader(0xD70E6670)
-        entity_reader = self.file_readers_factory.get_file_reader(0x0984415E)
-        visual_reader = self.file_readers_factory.get_file_reader(0xEC658D29)
-        lod_selector_reader = self.file_readers_factory.get_file_reader(0x01437462)
-        mesh_instance_data_reader = self.file_readers_factory.get_file_reader(0x536E963B)
-        mesh_data_reader = self.file_readers_factory.get_file_reader(0x415D9568)
 
         reader_file: BaseFile = reader
 
@@ -60,31 +65,32 @@ class ExportMeshPlugin(ExportPluginBase):
         data_block_files = reader_file.files
 
         obj_handler = ObjMtl(file_name, file_path, forge_reader, forge_readers, forge_data, file_id, file_data,
-                             game_data, material_reader, texture_set_reader)
+                             game_data, self.file_readers_factory)
 
         for data_block_entry_id in data_block_files:
-            # data = pyUbiForge.temp_files(data_block_entry_id)
-
-            entry_file_data, entry_file_bytes = self.get_file_data_from_any_forge(data_block_entry_id)
+            entry_file_data, entry_file_bytes = self.get_forge_container_file_data(data_block_entry_id)
 
             if entry_file_data is None:
                 print(f"Failed to find file {data_block_entry_id:016X}")
                 continue
 
-            # if data.file_type in ('0984415E', '3F742D26'):  # entity and entity group
             if entry_file_data.type in (0x0984415E, 0x3F742D26):  # entity and entity group
-                # entity: Entity = pyUbiForge.read_file(data.file)
-
-                entity: BaseFile = entity_reader
-                entity_file: FileDataWrapper = FileDataWrapper(entry_file_bytes, game_data)
-                entity.read(data_block_entry_id, entity_file)
-
-                if entity is None:
+                try:
+                    entity: BaseFile = self.create_entyty_reader()
+                    entity_file: FileDataWrapper = FileDataWrapper(entry_file_bytes, game_data)
+                    entity.read(data_block_entry_id, entity_file)
+                except Exception as exception:
                     print(f"Failed reading file {entry_file_data.name} {entry_file_data.id:016X}")
+                    entity = None
+
+                if entity is None or entity.nested_files is None:
+                    print(f"Failed reading entity file {entry_file_data.name} {entry_file_data.id:016X}")
                     continue
 
                 entity_nested_files: list[BaseFile] = entity.nested_files
-                for nested_file in entity_nested_files:
+                valid_entity_nested_files: list[BaseFile] = list(filter(partial(is_not, None), entity_nested_files))
+
+                for nested_file in valid_entity_nested_files:
                     if nested_file.resource_type == 0xEC658D29:  # visual
                         # nested_file: Visual
                         if 0x01437462 in nested_file.nested_files.keys():  # LOD selector
@@ -103,15 +109,14 @@ class ExportMeshPlugin(ExportPluginBase):
                             continue
                         # model_data = pyUbiForge.temp_files(mesh_instance_data.mesh_id)
 
-                        mesh_file_data, mesh_file_bytes = self.get_file_data_from_any_forge(mesh_instance_data.mesh_id)
+                        mesh_file_data, mesh_file_bytes = self.get_forge_container_file_data(mesh_instance_data.mesh_id)
 
                         if mesh_file_data is None:
                             print(f"Failed to find file {mesh_instance_data.mesh_id:016X}")
                             continue
 
-                        # model: BaseMesh = pyUbiForge.read_file(model_data.file)
-                        mesh: BaseMesh = mesh_data_reader
-                        reader_file: BaseFile = mesh_data_reader
+                        reader_file: BaseFile = self.create_mesh_data_reader()
+                        mesh: BaseMesh = reader_file
 
                         mesh_file: FileDataWrapper = FileDataWrapper(mesh_file_bytes, game_data)
                         reader_file.read(mesh_file_data.id, mesh_file)
@@ -133,7 +138,7 @@ class ExportMeshPlugin(ExportPluginBase):
         print(f'Finished exporting {file_name}.obj')
 
     # TODO: Move it to GameReader abstraction
-    def get_file_data_from_any_forge(self, file_id: int) -> tuple[ForgeFileData, bytes]:
+    def get_forge_container_file_data(self, file_id: int) -> tuple[ForgeFileData, bytes]:
         forge_reader = self.forge_reader
 
         if file_id not in forge_reader.forge_data.files_data:
@@ -148,10 +153,9 @@ class ExportMeshPlugin(ExportPluginBase):
             file_bytes = files_bytes[file_id]
             return file_data, file_bytes
 
-        print(f"Failed to find file {file_id:016X} as data file")
-        print(f'Searching in internal files for {self.file_data.name}')
+        print(f"Failed to find file {file_id:016X} as data file. Searching inside exporting file container...")
 
-        for child_file in self.file_data.children:
+        for child_file in self.file_data.get_top_parent_forge_item_file_data().children:
             child: ForgeFileData = child_file
 
             # Checking top child mathc
@@ -159,6 +163,9 @@ class ExportMeshPlugin(ExportPluginBase):
                 files_bytes = forge_reader.get_decompressed_files_bytes(self.file_data)
                 file_bytes = files_bytes[file_id]
                 return child, file_bytes
+
+        print(f"Failed to find file {file_id:016X} inside exporting file container. Stop searching.")
+        return None, None
 
     def export_mesh_dds(self, file_id, save_folder: str):
         forge_reader = self.forge_reader

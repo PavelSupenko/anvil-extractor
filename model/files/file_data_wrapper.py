@@ -152,7 +152,6 @@ class FileDataWrapper(BytesIO):
         reader: 'BaseFile' = self._game_data.file_readers_factory.get_file_reader(resource_type)
 
         if reader is None:
-            raise TypeError(f"{resource_type:08X}")
             return None
 
         reader.read(file_id, self)

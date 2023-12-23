@@ -40,8 +40,6 @@ class ExportMeshPlugin(ExportPluginBase):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         reader = self.file_readers_factory.get_file_reader(self.file_type_int)
-        material_reader = self.file_readers_factory.get_file_reader(0x85C817C3)
-        texture_set_reader = self.file_readers_factory.get_file_reader(0xD70E6670)
 
         # Not needed because method export_mesh_dds is a full copy of Reader functionality
         # texture_reader = self.file_readers_factory.get_file_reader(0xA2B7E917)
@@ -55,7 +53,7 @@ class ExportMeshPlugin(ExportPluginBase):
         reader_file.read(file_id, file)
 
         obj_handler = ObjMtl(file_name, file_path, forge_reader, forge_readers, forge_data, file_id, file_data, game_data,
-                             material_reader, texture_set_reader)
+                             self.file_readers_factory)
         obj_handler.export(mesh, file_name)
         obj_handler.save_and_close(self.export_mesh_dds)
         print(f'Exported {file_id:016X}')

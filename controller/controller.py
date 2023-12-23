@@ -41,13 +41,13 @@ class Controller:
         forge_files = forge_finder.find_files()
 
         self.reset_tree()
-        self.view.add_item(parent_data=None, node_data=game_directory_data)
+        self.view.add_item(node_data=game_directory_data)
 
         print(f'Found {len(forge_files)} forge files: {forge_files}')
 
         forge_files_sorted_by_size = sorted(forge_files, key=lambda x: x.size_mb, reverse=True)
         for forge_file_data in forge_files_sorted_by_size:
-            self.view.add_item(game_directory_data, forge_file_data)
+            self.view.add_item(forge_file_data)
             self.parse_forge(forge_file_data)
 
     def handle_export_plugin_clicked(self, file_data: FileDataBase, plugin: ExportPluginBase):
@@ -100,7 +100,7 @@ class Controller:
         for parsed_file in parsed_files:
             parsed_file.add_parent(file_data)
             file_data.add_child(parsed_file)
-            self.view.add_item(file_data, parsed_file)
+            self.view.add_item(parsed_file)
 
     def parse_forge_item(self, file_data: ForgeContainerFileData):
         name = file_data.name
@@ -116,4 +116,4 @@ class Controller:
         forge_reader.parse_file_data(file_data)
 
         for child in file_data.children:
-            self.view.add_item(parent_data=file_data, node_data=child)
+            self.view.add_item(node_data=child)

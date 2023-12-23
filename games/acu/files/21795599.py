@@ -28,7 +28,7 @@ class Reader(BaseFile):
                 filled_count += 1
                 continue
             else:
-                raise Exception(f'{__name__}: check_byte is not in 0, 3')
+                raise Exception(f'{__name__}: check_byte is not in 0, 3. Exited at count {found_count}/{empty_count}')
         file.read_bytes(8)
         count = file.read_uint_32()
         for _ in range(count):

@@ -1,3 +1,4 @@
+from math import floor
 from typing import Callable
 
 from PySide6.QtCore import Qt, QPoint
@@ -33,7 +34,7 @@ class TreeView(QtWidgets.QTreeWidget):
         self.items_dictionary = {}
         self.clear()
         self.setHeaderLabels(["Name", "File Type", "File ID", "Position", "Size"])
-        self._set_column_proportions(0.3, 0.2, 0.2, 0.15, 0.15)  # Set proportional column widths
+        self._set_column_proportions(5, 2, 2, 2, 2)  # Set proportional column widths
         self._add_nodes_to_tree(self.invisibleRootItem(), [])
 
     def update_visual_tree(self):
@@ -64,17 +65,14 @@ class TreeView(QtWidgets.QTreeWidget):
 
         return result
 
-    def add_item(self, parent_data: FileDataBase, node_data: FileDataBase):
+    def add_item(self, node_data: FileDataBase):
+        parent_data = node_data.parent
         if parent_data is None:
             self._add_node_to_tree(self.invisibleRootItem(), node_data)
             return
 
         parent_item = self.items_dictionary[parent_data.full_path]
         self._add_node_to_tree(parent_item, node_data)
-
-    def add_items(self, parent_data: FileDataBase, nodes_data: list[FileDataBase]):
-        for node_data in nodes_data:
-            self.add_item(parent_data, node_data)
 
     def handle_item_clicked(self, item: TreeViewItem, column: int):
         self.item_clicked_callback(item)
@@ -90,21 +88,26 @@ class TreeView(QtWidgets.QTreeWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self._set_column_proportions(0.3, 0.2, 0.2, 0.15, 0.15)
+        self._set_column_proportions(5, 2, 2, 2, 2)
 
     def _set_column_proportions(self, name_proportion, type_proportion, id_proportion,
                                 position_proportion, size_proportion):
-        total_width = self.width()
-        name_width = total_width * name_proportion
-        type_width = total_width * type_proportion
-        id_width = total_width * id_proportion
-        position_width = total_width * position_proportion
-        size_width = total_width * size_proportion
-        self.setColumnWidth(0, int(name_width))
-        self.setColumnWidth(1, int(type_width))
-        self.setColumnWidth(2, int(id_width))
-        self.setColumnWidth(3, int(position_width))
-        self.setColumnWidth(4, int(size_width))
+
+        # 50 is the width of scroll bar
+        total_width = self.width() - 50
+        total_logical_width = name_proportion + type_proportion + id_proportion + position_proportion + size_proportion
+
+        name_width = total_width * name_proportion / total_logical_width
+        type_width = total_width * type_proportion / total_logical_width
+        id_width = total_width * id_proportion / total_logical_width
+        position_width = total_width * position_proportion / total_logical_width
+        size_width = total_width * size_proportion / total_logical_width
+
+        self.setColumnWidth(0, int(floor(name_width)))
+        self.setColumnWidth(1, int(floor(type_width)))
+        self.setColumnWidth(2, int(floor(id_width)))
+        self.setColumnWidth(3, int(floor(position_width)))
+        self.setColumnWidth(4, int(floor(size_width)))
 
     def _add_nodes_to_tree(self, parent_item: TreeViewItem, nodes_data: list[FileDataBase]):
         for node_data in nodes_data:
