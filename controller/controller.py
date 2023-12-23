@@ -3,6 +3,8 @@ from games.acu.files import ACUFileReadersFactory
 from model.compression.compressor import Compressor
 from model.export import ExportPluginsFactory
 from model.export.export_plugin_base import ExportPluginBase
+from model.settings.export_settings_loader import ExportSettingsLoader
+from model.settings.game_settings_loader import GameSettingsLoader
 from model.tree.file_data_base import FileDataBase
 from model.tree.system_directory_data import SystemDirectoryData
 from model.tree.system_file_data import SystemFileData
@@ -20,12 +22,13 @@ class Controller:
         self.compressor = Compressor()
         self.forge_readers: dict[str, ForgeReader] = {}
 
-        # a = get_default_type_readers()
-
         self.view = View(item_clicked_callback=self.handle_item_clicked,
                          plugin_clicked_callback=self.handle_export_plugin_clicked,
                          export_context_menu_factory=ExportContextMenuFactory(
-                             export_plugins_factory=ExportPluginsFactory('output', ACUFileReadersFactory())))
+                             export_plugins_factory=ExportPluginsFactory('output', ACUFileReadersFactory())),
+                         export_settings_loader=ExportSettingsLoader('settings'),
+                         game_settings_loader=GameSettingsLoader('settings'))
+
         self.view.show()
         self.handle_game_path_changed("/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity")
         self.view.wait()

@@ -1,5 +1,7 @@
 import logging
 import os
+import subprocess
+import sys
 from typing import Callable
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -7,8 +9,12 @@ from PySide6.QtCore import QPoint
 from PySide6.QtGui import QAction
 
 from model.export.export_plugin_base import ExportPluginBase
+from model.settings.export_settings_loader import ExportSettingsLoader
+from model.settings.game_settings_loader import GameSettingsLoader
 from model.tree.file_data_base import FileDataBase
 from view.context_menu.export_context_menu_factory import ExportContextMenuFactory
+from view.export_settings_view import ExportSettingsView
+from view.game_settings_view import GameSettingsView
 from view.status_bar import StatusBar
 from view.tree.tree_view import TreeView
 from view.tree.tree_view_item import TreeViewItem
@@ -20,9 +26,13 @@ class View(QtWidgets.QApplication):
                  item_clicked_callback: Callable[[FileDataBase], None],
                  plugin_clicked_callback: Callable[[FileDataBase, ExportPluginBase], None],
                  export_context_menu_factory: ExportContextMenuFactory,
+                 export_settings_loader: ExportSettingsLoader,
+                 game_settings_loader: GameSettingsLoader
                  ):
         QtWidgets.QApplication.__init__(self)
 
+        self.export_settings_loader = export_settings_loader
+        self.game_settings_loader = game_settings_loader
         self.export_context_menu_factory = export_context_menu_factory
         self.item_clicked_callback = item_clicked_callback
         self.plugin_clicked_callback = plugin_clicked_callback
@@ -34,7 +44,7 @@ class View(QtWidgets.QApplication):
         self.main_window = QtWidgets.QMainWindow()
         self.main_window.setObjectName("MainWindow")
         self.main_window.setWindowIcon(QtGui.QIcon('icon.ico'))
-        self.main_window.resize(809, 698)
+        self.main_window.resize(1000, 800)
         self.central_widget = QtWidgets.QWidget(self.main_window)
         self.central_widget.setObjectName("centralwidget")
         self.main_window.setCentralWidget(self.central_widget)
@@ -44,22 +54,12 @@ class View(QtWidgets.QApplication):
         self.horizontal_layout.setObjectName("horizontal_layout")
         self.vertical_layout.addLayout(self.horizontal_layout)
 
-        # drop down box to select the game
-        self.game_select = QtWidgets.QComboBox()
-        self.game_select.setObjectName("game_select")
-        self.game_select.addItems(['ACU', 'AC1', 'AC2'])
-        self.horizontal_layout.addWidget(self.game_select, 1)
-
         # search box
         self.search_box = QtWidgets.QLineEdit()
         self.search_box.setClearButtonEnabled(True)
         self.search_box.setObjectName("search_box")
         self.search_box.textChanged.connect(self._change_search)
         self.horizontal_layout.addWidget(self.search_box, 2)
-        # self.match_case = QtWidgets.QCheckBox('Match Case')
-        # self.horizontal_layout.addWidget(self.match_case)
-        # self.regex = QtWidgets.QCheckBox('Regex')
-        # self.horizontal_layout.addWidget(self.regex)
 
         # file tree view
         self.file_view = TreeView(self.central_widget, self.icons, self.handle_item_clicked,
@@ -73,20 +73,23 @@ class View(QtWidgets.QApplication):
         self.menubar.setObjectName("menubar")
         self.main_window.setMenuBar(self.menubar)
 
-        games_menu_item = self.menubar.addMenu('&Games')
-        games_action = QAction('&Games settings', self)
-        # games_action.triggered.connect(lambda: self._show_games())
-        games_menu_item.addAction(games_action)
-
         options_menu_item = self.menubar.addMenu('&Options')
-        options_action = QAction('&General options', self)
-        # options_action.triggered.connect(lambda: self._show_options())
-        options_menu_item.addAction(options_action)
+        export_options_action = QAction('&Export options', self)
+        export_options_action.triggered.connect(lambda: self._show_export_options())
+        options_menu_item.addAction(export_options_action)
+
+        game_options_action = QAction('&Game options', self)
+        game_options_action.triggered.connect(lambda: self._show_game_options())
+        options_menu_item.addAction(game_options_action)
 
         support_menu_item = self.menubar.addMenu('&Support')
-        support_action = QAction('&Donate', self)
-        # support_action.triggered.connect(lambda: self._donate())
-        support_menu_item.addAction(support_action)
+        donate_original_author = QAction('&Donate to original author', self)
+        donate_original_author.triggered.connect(lambda: self._donate_to_original_author())
+        support_menu_item.addAction(donate_original_author)
+
+        donate_refactoring_author = QAction('&Donate to refactoring author', self)
+        donate_refactoring_author.triggered.connect(lambda: self._donate_to_original_author())
+        support_menu_item.addAction(donate_refactoring_author)
 
         # statusbar
         self.statusbar = QtWidgets.QStatusBar()
@@ -147,3 +150,23 @@ class View(QtWidgets.QApplication):
         if os.path.isdir(style_icons_path):
             for icon in os.listdir(style_icons_path):
                 self.icons[os.path.splitext(icon)[0]] = QtGui.QIcon(os.path.join(style_icons_path, icon))
+
+    def _show_export_options(self):
+        settings_view = ExportSettingsView(self.export_settings_loader)
+        settings_view.exec_()
+
+    def _show_game_options(self):
+        settings_view = GameSettingsView(self.game_settings_loader)
+        settings_view.exec_()
+
+    @staticmethod
+    def _donate_to_original_author():
+        if sys.platform == 'win32':
+            os.startfile('https://www.paypal.me/gentlegiantJGC')
+        elif sys.platform == 'darwin':
+            subprocess.Popen(['open', 'https://www.paypal.me/gentlegiantJGC'])
+        else:
+            try:
+                subprocess.Popen(['xdg-open', 'https://www.paypal.me/gentlegiantJGC'])
+            except OSError:
+                pass
