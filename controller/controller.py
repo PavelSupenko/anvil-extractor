@@ -1,3 +1,4 @@
+from games.ac2.ac2_game_data import AC2GameData
 from games.ac2.files import AC2FileReadersFactory
 from games.acu.acu_game_data import ACUGameData
 from games.acu.files import ACUFileReadersFactory
@@ -45,18 +46,19 @@ class Controller:
         if game_settings is None or not game_settings.is_valid:
             return
 
+        game_path = game_settings.path
+        game_directory_data = SystemDirectoryData(game_path)
+
         if game_settings.preset == 'ACU':
+            self.game_data = ACUGameData(path=game_path)
             self.view.export_context_menu_factory = ExportContextMenuFactory(
                              export_plugins_factory=ExportPluginsFactory('output', ACUFileReadersFactory()))
         elif game_settings.preset == 'AC2':
+            self.game_data = AC2GameData(path=game_path)
             self.view.export_context_menu_factory = ExportContextMenuFactory(
                              export_plugins_factory=ExportPluginsFactory('output', AC2FileReadersFactory()))
         else:
             raise Exception(f'Unknown preset: {game_settings.preset}')
-
-        game_path = game_settings.path
-        self.game_data = ACUGameData(path=game_path)
-        game_directory_data = SystemDirectoryData(game_path)
 
         forge_finder = ForgeFilesFinder(game_directory_data)
         forge_files = forge_finder.find_files()
