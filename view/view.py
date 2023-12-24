@@ -10,6 +10,7 @@ from PySide6.QtGui import QAction
 
 from model.export.export_plugin_base import ExportPluginBase
 from model.settings.export_settings_loader import ExportSettingsLoader
+from model.settings.game_settings import GameSettings
 from model.settings.game_settings_loader import GameSettingsLoader
 from model.tree.file_data_base import FileDataBase
 from view.context_menu.export_context_menu_factory import ExportContextMenuFactory
@@ -25,17 +26,19 @@ class View(QtWidgets.QApplication):
     def __init__(self,
                  item_clicked_callback: Callable[[FileDataBase], None],
                  plugin_clicked_callback: Callable[[FileDataBase, ExportPluginBase], None],
-                 export_context_menu_factory: ExportContextMenuFactory,
+                 game_settings_changed_callback: Callable[[GameSettings], None],
                  export_settings_loader: ExportSettingsLoader,
                  game_settings_loader: GameSettingsLoader
                  ):
         QtWidgets.QApplication.__init__(self)
 
+        self.export_context_menu_factory: ExportContextMenuFactory = None
+
         self.export_settings_loader = export_settings_loader
         self.game_settings_loader = game_settings_loader
-        self.export_context_menu_factory = export_context_menu_factory
         self.item_clicked_callback = item_clicked_callback
         self.plugin_clicked_callback = plugin_clicked_callback
+        self.game_settings_changed_callback = game_settings_changed_callback
 
         # load the style
         self.icons = {}

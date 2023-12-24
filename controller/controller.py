@@ -1,9 +1,11 @@
+from games.ac2.files import AC2FileReadersFactory
 from games.acu.acu_game_data import ACUGameData
 from games.acu.files import ACUFileReadersFactory
 from model.compression.compressor import Compressor
 from model.export import ExportPluginsFactory
 from model.export.export_plugin_base import ExportPluginBase
 from model.settings.export_settings_loader import ExportSettingsLoader
+from model.settings.game_settings import GameSettings
 from model.settings.game_settings_loader import GameSettingsLoader
 from model.tree.file_data_base import FileDataBase
 from model.tree.system_directory_data import SystemDirectoryData
@@ -22,21 +24,37 @@ class Controller:
         self.compressor = Compressor()
         self.forge_readers: dict[str, ForgeReader] = {}
 
+        self.export_settings_loader = ExportSettingsLoader('settings')
+        self.game_settings_loader = GameSettingsLoader(settings_directory_path='settings', change_callback=self.handle_game_settings_changed)
+        game_settings = self.game_settings_loader.load()
+
         self.view = View(item_clicked_callback=self.handle_item_clicked,
                          plugin_clicked_callback=self.handle_export_plugin_clicked,
-                         export_context_menu_factory=ExportContextMenuFactory(
-                             export_plugins_factory=ExportPluginsFactory('output', ACUFileReadersFactory())),
-                         export_settings_loader=ExportSettingsLoader('settings'),
-                         game_settings_loader=GameSettingsLoader('settings'))
+                         game_settings_changed_callback=self.handle_game_settings_changed,
+                         export_settings_loader=self.export_settings_loader,
+                         game_settings_loader=self.game_settings_loader)
 
         self.view.show()
-        self.handle_game_path_changed("/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity")
+        self.handle_game_settings_changed(game_settings)
         self.view.wait()
 
     def reset_tree(self):
         self.view.reset_tree()
 
-    def handle_game_path_changed(self, game_path: str):
+    def handle_game_settings_changed(self, game_settings: GameSettings):
+        if game_settings is None or not game_settings.is_valid:
+            return
+
+        if game_settings.preset == 'ACU':
+            self.view.export_context_menu_factory = ExportContextMenuFactory(
+                             export_plugins_factory=ExportPluginsFactory('output', ACUFileReadersFactory()))
+        elif game_settings.preset == 'AC2':
+            self.view.export_context_menu_factory = ExportContextMenuFactory(
+                             export_plugins_factory=ExportPluginsFactory('output', AC2FileReadersFactory()))
+        else:
+            raise Exception(f'Unknown preset: {game_settings.preset}')
+
+        game_path = game_settings.path
         self.game_data = ACUGameData(path=game_path)
         game_directory_data = SystemDirectoryData(game_path)
 
