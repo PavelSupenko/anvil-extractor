@@ -36,42 +36,8 @@ class Reader(BaseTexture, BaseFile):
         # next 4 are \x01\x00\x00\x00 for diffuse maps and \x00\x00\x00\x00 for other things like volume textures and maps
         self.dwMipMapCount = texture_file.read_bytes(4)
 
-        self.material_type = texture_file.read_uint_32()  # resource type (the same as the index in the texture_set)
-        # 0 for diffuse
-        # 1 for normal
-        # 2 for specular
-        # 3 for height
-        # 4 ?
-        # 5 TransmissionMap
-        # 6 ?
-        # 7 Mask1Map
-        # 8 Mask2Map
-        # 11 for 3D LUT, cube maps and other merged textures
-        unk4 = texture_file.read_uint_32()  # range 0-5
-        self.bit_field = texture_file.read_uint_32()  # a large number (may be a bit field)
-        unk6 = texture_file.read_uint_32()  # seems to always be 0
-        unk7 = texture_file.read_uint_32()  # seems to always be 0
-        unk8 = texture_file.read_uint_32()  # seems to always be 0
-
-        texture_file.read_file_id()
-        texture_file.read_resource_type()
-        one = texture_file.read_uint_32()  # always 1
-        seven = texture_file.read_uint_32()  # always 7
-        dwWidth = texture_file.read_bytes(4)
-        dwHeight = texture_file.read_bytes(4)
-        dwDepth = texture_file.read_bytes(4)
-        mipmapcount = texture_file.read_bytes(4)
-        imgDXT = texture_file.read_uint_32()
-
-        unk9 = texture_file.read_uint_32()  # looks to equal unk1
-        unk10 = texture_file.read_uint_32()  # looks to equal unk2
-        unk11 = texture_file.read_uint_32()  # always 0
-        unk12 = texture_file.read_uint_32()  # always 0
-        unk13 = texture_file.read_uint_32()  # always 0
-
-        # print(unk1, unk2, self.material_type, unk4, f"{unk5:032b}")
-
-        # logging.info(f'{unk1}	{unk2}	{self.material_type}	{unk4}	{unk5}	{unk6}	{unk7}	{unk8}	{unk9}	{unk10}	{unk11} {unk12}	{unk13} {one}	{seven}    [{dwWidth == self.dwWidth} {dwHeight == self.dwHeight}  {dwDepth == self.dwDepth}  {mipmapcount == self.dwMipMapCount}  {imgDXT == self.imgDXT}]')
+        # Skip 44 bytes
+        texture_file.read_bytes(44)
 
         self.dwPitchOrLinearSize = texture_file.read_bytes(4)
         self.buffer = texture_file.read_bytes(struct.unpack('<I', self.dwPitchOrLinearSize)[0])
