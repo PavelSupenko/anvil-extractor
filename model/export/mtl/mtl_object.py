@@ -48,7 +48,7 @@ class ObjMtl:
             os.makedirs(self.save_folder)
         self._obj = open(f'{self.save_folder}{os.sep}{self.model_name}.obj', 'w')
         self._obj.write(
-            '#Wavefront Object File\n#Exported by ACExplorer, written by gentlegiantJGC, based on code from ARchive_neXt\n\n')
+            '# Wavefront Object File\n# Exported by Anvil Extractor based on ACExplorer, written by gentlegiantJGC, and ARchive_neXt\n\n')
         self._obj.write(f'mtllib ./{self.model_name}.mtl\n')
 
     def group_name(self, name: str) -> str:
@@ -101,7 +101,7 @@ class ObjMtl:
             os.makedirs(self.save_folder)
         mtl = open(f'{self.save_folder}{os.sep}{self.model_name}.mtl', 'w')
         mtl.write(
-            '# Material Library\n#Exported by ACExplorer, written by gentlegiantJGC, based on code from ARchive_neXt\n\n')
+            '# Material Library\n# Exported by Anvil Extractor based on ACExplorer, written by gentlegiantJGC, and ARchive_neXt\n\n')
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             fild_ids = [

@@ -74,8 +74,8 @@ class Controller:
             self.parse_forge(forge_file_data)
 
     def handle_export_plugin_clicked(self, file_data: FileDataBase, plugin: ExportPluginBase):
-        if type(file_data) is not ForgeFileData:
-            print(f'Export can be applied only to forge item files')
+        if type(file_data) is not ForgeFileData and type(file_data) is not ForgeContainerFileData:
+            print(f'Export can be applied only to forge item or forge container files')
             return
 
         file_data: ForgeFileData = file_data

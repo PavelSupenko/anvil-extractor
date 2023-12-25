@@ -12,7 +12,7 @@ from model.files.file_readers_factory_base import FileReadersFactoryBase
 from model.files.mesh import BaseMesh
 from model.files.texture import BaseTexture
 from model.forge.forge_data import ForgeData
-from model.forge.forge_container_file_data import ForgeFileData
+from model.forge.forge_container_file_data import ForgeFileData, ForgeContainerFileData
 from model.forge.forge_reader import ForgeReader
 from model.game.game_data import GameData
 
@@ -38,14 +38,7 @@ class ExportMeshPlugin(ExportPluginBase):
         return self.file_readers_factory.get_file_reader(self.mesh_data_type_int)
 
     def execute_internal(self, forge_reader: ForgeReader, forge_readers: list[ForgeReader], forge_data: ForgeData,
-                         file_id, file_data: ForgeFileData, game_data: GameData):
-        self.forge_reader = forge_reader
-        self.forge_readers = forge_readers
-        self.forge_data = forge_data
-        self.file_id = file_id
-        self.file_data = file_data
-        self.game_data = game_data
-
+                         file_id, file_data: ForgeFileData,  container_file_data: ForgeContainerFileData, game_data: GameData):
         file_name = file_data.name
 
         file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
@@ -68,7 +61,7 @@ class ExportMeshPlugin(ExportPluginBase):
                              game_data, self.file_readers_factory)
 
         for data_block_entry_id in data_block_files:
-            entry_file_data, entry_file_bytes = self.get_forge_container_file_data(data_block_entry_id)
+            entry_file_data, entry_file_bytes = self.find_forge_container_file_data(data_block_entry_id)
 
             if entry_file_data is None:
                 print(f"Failed to find file {data_block_entry_id:016X}")
@@ -109,7 +102,7 @@ class ExportMeshPlugin(ExportPluginBase):
                             continue
                         # model_data = pyUbiForge.temp_files(mesh_instance_data.mesh_id)
 
-                        mesh_file_data, mesh_file_bytes = self.get_forge_container_file_data(mesh_instance_data.mesh_id)
+                        mesh_file_data, mesh_file_bytes = self.find_forge_container_file_data(mesh_instance_data.mesh_id)
 
                         if mesh_file_data is None:
                             print(f"Failed to find file {mesh_instance_data.mesh_id:016X}")
@@ -136,36 +129,6 @@ class ExportMeshPlugin(ExportPluginBase):
 
         obj_handler.save_and_close(self.export_mesh_dds)
         print(f'Finished exporting {file_name}.obj')
-
-    # TODO: Move it to GameReader abstraction
-    def get_forge_container_file_data(self, file_id: int) -> tuple[ForgeFileData, bytes]:
-        forge_reader = self.forge_reader
-
-        if file_id not in forge_reader.forge_data.files_data:
-            for forge_reader_another in self.forge_readers:
-                if file_id in forge_reader_another.forge_data.files_data:
-                    forge_reader = forge_reader_another
-                    break
-
-        if file_id in forge_reader.forge_data.files_data:
-            file_data = forge_reader.forge_data.files_data[file_id]
-            files_bytes = forge_reader.get_decompressed_files_bytes(file_data)
-            file_bytes = files_bytes[file_id]
-            return file_data, file_bytes
-
-        print(f"Failed to find file {file_id:016X} as data file. Searching inside exporting file container...")
-
-        for child_file in self.file_data.get_top_parent_forge_item_file_data().children:
-            child: ForgeFileData = child_file
-
-            # Checking top child mathc
-            if child.id == file_id:
-                files_bytes = forge_reader.get_decompressed_files_bytes(self.file_data)
-                file_bytes = files_bytes[file_id]
-                return child, file_bytes
-
-        print(f"Failed to find file {file_id:016X} inside exporting file container. Stop searching.")
-        return None, None
 
     def export_mesh_dds(self, file_id, save_folder: str):
         forge_reader = self.forge_reader

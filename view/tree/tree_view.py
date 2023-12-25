@@ -114,7 +114,7 @@ class TreeView(QtWidgets.QTreeWidget):
             self._add_node_to_tree(parent_item, node_data)
 
     def _add_node_to_tree(self, parent_item: TreeViewItem, node_data: FileDataBase):
-        file_type = node_data.type
+        file_type = node_data.type_string
 
         item: TreeViewItem = TreeViewItem(node_data, parent_item)
         self.items_dictionary[node_data.full_path] = item

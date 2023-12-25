@@ -21,6 +21,10 @@ class FileDataBase(ABC):
         self._full_path = self.recalculate_full_path()
 
     @property
+    def type_string(self) -> str:
+        return self.type
+
+    @property
     def full_path(self) -> str:
         return self._full_path
 

@@ -12,7 +12,7 @@ class ExportPluginsFactory:
         self.output_directory = output_directory
         self.file_readers_factory_base = file_readers_factory_base
 
-    def get(self, file_type: int) -> list[ExportPluginBase]:
+    def get(self, file_type: str) -> list[ExportPluginBase]:
         # Get the current package name
         package_name = __name__
 

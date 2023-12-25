@@ -7,16 +7,22 @@ class ForgeFileData(FileDataBase):
         super().__init__(name='', type='')
         self.id = id
 
-    def add_info(self, type, name):
+    def add_info(self, type: int, name: str):
         self.type = type
         self.name = name
 
     @property
-    def properties(self) -> list[str]:
-        return [self.name, self.type, self.id]
-        # return [self.name, f'{self.type:016X}', self.id]
+    def type_string(self) -> str:
+        if type(self.type) is str:
+            return self.type.replace("0x", "").upper()
 
-    def get_top_parent_forge_item_file_data(self) -> 'ForgeFileData':
+        return hex(self.type).replace("0x", "").upper()
+
+    @property
+    def properties(self) -> list[str]:
+        return [self.name, self.type_string, self.id]
+
+    def get_top_parent_forge_item_file_data(self) -> 'ForgeContainerFileData':
         iterative_parent: FileDataBase = self
 
         while type(iterative_parent.parent) is not SystemFileData:

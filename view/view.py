@@ -120,7 +120,7 @@ class View(QtWidgets.QApplication):
         return self.exec()
 
     def translate_(self):
-        self.main_window.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Anvil extractor"))
+        self.main_window.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Anvil Extractor"))
 
     def reset_tree(self):
         self.file_view.reset_tree()
