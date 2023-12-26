@@ -41,7 +41,7 @@ class ExportMeshPlugin(ExportPluginBase):
                          file_id, file_data: ForgeFileData,  container_file_data: ForgeContainerFileData, game_data: GameData):
         file_name = file_data.name
 
-        file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
+        file_bytes = forge_reader.get_decompressed_files_bytes(container_file_data)
         file_path = os.path.join(self.output_directory_path, game_data.name)
 
         print(f'Exporting mesh data to {file_path}')

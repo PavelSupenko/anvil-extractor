@@ -22,7 +22,7 @@ class ExportTexturePlugin(ExportPluginBase):
     def execute_internal(self, forge_reader: ForgeReader, forge_readers: list[ForgeReader], forge_data: ForgeData,
                          file_id, file_data: ForgeFileData,  container_file_data: ForgeContainerFileData, game_data: GameData):
 
-        file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
+        file_bytes = forge_reader.get_decompressed_files_bytes(container_file_data)
         file_path = os.path.join(self.output_directory_path, game_data.name,
                                      f'{file_data.name}_{file_id:016X}.dds')
 

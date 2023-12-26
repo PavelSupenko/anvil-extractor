@@ -18,7 +18,7 @@ class ExportFormatPlugin(ExportPluginBase):
 
     def execute_internal(self, forge_reader: ForgeReader, forge_readers: list[ForgeReader], forge_data: ForgeData,
                          file_id, file_data: ForgeFileData,  container_file_data: ForgeContainerFileData, game_data: GameData):
-        file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
+        file_bytes = forge_reader.get_decompressed_files_bytes(container_file_data)
 
         if file_bytes is None:
             print(f"Failed to find file {file_id:016X}")
