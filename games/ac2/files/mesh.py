@@ -22,29 +22,117 @@ class Reader(BaseMesh, BaseFile):
     ResourceType = 0x415D9568
 
     def read(self, file_id: int, model_file: FileDataWrapper):
-        model_file.read_bytes(1)  # skip an empty byte
+        # There is two types of export in Archive_next: mdl and mdl_s. As I can see, ACExplorer uses only mdl.
+
         self.type = model_file.read_bytes(4)
-        model_file.read_bytes(1)
+        model_file.read_bytes(1)  # skip an empty byte
         a_count = model_file.read_uint_32()
-        for a in range(a_count * 2):
-            check = model_file.read_uint_8()
-            while check == 3:
-                check = model_file.read_uint_8()
-            model_file.read_bytes(1)
-            model_file.read_file()
+
+        # This loop is kind of magic. Keeping it for now
+        # for a in range(a_count * 2):
+        #     check = model_file.read_uint_8()
+        #     while check == 3:
+        #         check = model_file.read_uint_8()
+        #     model_file.read_bytes(1)
+        #     model_file.read_file()
+        # if a_count > 0:
+        #     model_file.read_bytes(1)
+
         if a_count > 0:
             model_file.read_bytes(1)
 
-        self._bones = [model_file.read_file() for _ in range(model_file.read_uint_32())]
+            for i in range(2):
+                model_file.read_bytes(13)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 4)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 4)
+                num7 = model_file.read_int_32()
 
-        self.bounding_box = model_file.read_numpy(numpy.float32, 32).reshape(2, 4)
-        model_file.out_file_write(f'{self.bounding_box}\n')
+                if num7 > 0:
+                    logging.warning("Undetermined block of model information.")
+                    return
 
-        model_file.read_bytes(1)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 4)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 12)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 12)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 12)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 12)
+                num7 = model_file.read_int_32()
 
-        model_file.read_file_id()
+                if num7 > 0:
+                    logging.warning("Undetermined block of model information.")
+                    return
+
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 4)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 4)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 16)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7)
+                num7 = model_file.read_int_32()
+
+                if num7 > 0:
+                    logging.warning("Undetermined block of model information.")
+                    return
+
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 13)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 8)
+                num7 = model_file.read_int_32()
+                model_file.read_bytes(num7 * 4)
+                model_file.read_bytes(8)
+
+        bones_count = model_file.read_uint_32()
+        #self._bones = [model_file.read_file() for _ in range(bones_count)]
+
+        if bones_count > 0:
+            for i in range(bones_count):
+                model_file.read_bytes(40)
+
+        model_file.read_bytes(5)
+
+        # self.bounding_box = model_file.read_numpy(numpy.float32, 32).reshape(2, 4)
+        # model_file.out_file_write(f'{self.bounding_box}\n')
+
+        # model_file.read_bytes(1)
+
+        # model_file.read_file_id()
+
+        resource_type = model_file.read_resource_type()
+
         # TODO: this part should get moved to a different file technically
-        if model_file.read_resource_type() == int("FC9E1595", 16):
+        if resource_type == int("FC9E1595", 16):
+            model_file.read_bytes(14)
+            model_file.out_file_write('Vert table width\n')
+            vert_table_width = model_file.read_bytes(1)
+
+            mesh_count = model_file.read_uint_32()
+            self._meshes = model_file.read_numpy([
+                ('file_id', numpy.uint32),
+                ('file_type', numpy.uint32),
+                ('verts_used', numpy.uint32),  # this is not always perfect # meshTable.X
+                ('', numpy.uint32),  # 4L
+                ('vert_count', numpy.uint32),  # meshTable.Y
+                ('faces_used_x3', numpy.uint32),  # meshTable.Z
+                ('face_count', numpy.uint32),  # meshTable.W
+                ('', numpy.uint32)
+            ], 32 * mesh_count)
+
+
+
+        # TODO: this part should get moved to a different file technically
+        if False and resource_type == int("FC9E1595", 16):
             model_file.read_bytes(4)
             model_file.out_file_write('Typeswitch\n')
             type_switch = model_file.read_uint_8()
