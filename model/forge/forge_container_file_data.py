@@ -13,5 +13,4 @@ class ForgeContainerFileData(ForgeFileData):
 
     @property
     def properties(self) -> list[str]:
-        return [self.name, self.type, self.id, self.raw_data_offset, self.raw_data_size]
-        # return [self.name, f'{self.type:016X}', self.id, self.raw_data_offset, self.raw_data_size]
+        return [self.name, self.type_string, self.id, self.raw_data_offset, self.raw_data_size]

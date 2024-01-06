@@ -1,8 +1,13 @@
+from games.ac2.ac2_game_data import AC2GameData
+from games.ac2.files import AC2FileReadersFactory
 from games.acu.acu_game_data import ACUGameData
 from games.acu.files import ACUFileReadersFactory
 from model.compression.compressor import Compressor
 from model.export import ExportPluginsFactory
 from model.export.export_plugin_base import ExportPluginBase
+from model.settings.export_settings_loader import ExportSettingsLoader
+from model.settings.game_settings import GameSettings
+from model.settings.game_settings_loader import GameSettingsLoader
 from model.tree.file_data_base import FileDataBase
 from model.tree.system_directory_data import SystemDirectoryData
 from model.tree.system_file_data import SystemFileData
@@ -20,22 +25,40 @@ class Controller:
         self.compressor = Compressor()
         self.forge_readers: dict[str, ForgeReader] = {}
 
-        # a = get_default_type_readers()
+        self.export_settings_loader = ExportSettingsLoader('settings')
+        self.game_settings_loader = GameSettingsLoader(settings_directory_path='settings', change_callback=self.handle_game_settings_changed)
+        game_settings = self.game_settings_loader.load()
 
         self.view = View(item_clicked_callback=self.handle_item_clicked,
                          plugin_clicked_callback=self.handle_export_plugin_clicked,
-                         export_context_menu_factory=ExportContextMenuFactory(
-                             export_plugins_factory=ExportPluginsFactory('output', ACUFileReadersFactory())))
+                         game_settings_changed_callback=self.handle_game_settings_changed,
+                         export_settings_loader=self.export_settings_loader,
+                         game_settings_loader=self.game_settings_loader)
+
         self.view.show()
-        self.handle_game_path_changed("/Users/pavelsupenko/Library/Application Support/CrossOver/Bottles/Windows-10-64/drive_c/Games/Assassin's Creed Unity")
+        self.handle_game_settings_changed(game_settings)
         self.view.wait()
 
     def reset_tree(self):
         self.view.reset_tree()
 
-    def handle_game_path_changed(self, game_path: str):
-        self.game_data = ACUGameData(path=game_path)
+    def handle_game_settings_changed(self, game_settings: GameSettings):
+        if game_settings is None or not game_settings.is_valid:
+            return
+
+        game_path = game_settings.path
         game_directory_data = SystemDirectoryData(game_path)
+
+        if game_settings.preset == 'ACU':
+            self.game_data = ACUGameData(path=game_path)
+            self.view.export_context_menu_factory = ExportContextMenuFactory(
+                             export_plugins_factory=ExportPluginsFactory('output', ACUFileReadersFactory()))
+        elif game_settings.preset == 'AC2':
+            self.game_data = AC2GameData(path=game_path)
+            self.view.export_context_menu_factory = ExportContextMenuFactory(
+                             export_plugins_factory=ExportPluginsFactory('output', AC2FileReadersFactory()))
+        else:
+            raise Exception(f'Unknown preset: {game_settings.preset}')
 
         forge_finder = ForgeFilesFinder(game_directory_data)
         forge_files = forge_finder.find_files()
@@ -51,8 +74,8 @@ class Controller:
             self.parse_forge(forge_file_data)
 
     def handle_export_plugin_clicked(self, file_data: FileDataBase, plugin: ExportPluginBase):
-        if type(file_data) is not ForgeFileData:
-            print(f'Export can be applied only to forge item files')
+        if type(file_data) is not ForgeFileData and type(file_data) is not ForgeContainerFileData:
+            print(f'Export can be applied only to forge item or forge container files')
             return
 
         file_data: ForgeFileData = file_data

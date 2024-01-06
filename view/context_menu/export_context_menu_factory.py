@@ -18,7 +18,7 @@ class ExportContextMenuFactory:
                click_callback: Callable[[FileDataBase, ExportPluginBase], None]) -> QMenu:
         menu = ExportContextMenu(parent, item)
 
-        export_plugins = self.export_plugins_factory.get(item.file_data.type)
+        export_plugins = self.export_plugins_factory.get(item.file_data.type_string)
 
         for plugin in export_plugins:
             menu.addAction(plugin.plugin_name, lambda plugin_lock=plugin: click_callback(item.file_data, plugin_lock))

@@ -5,6 +5,7 @@ from typing import List, Tuple, Dict
 import numpy
 
 from model.compression.compressor import Compressor
+from model.files.file_data_wrapper import FileDataWrapper
 from model.forge.forge_data import ForgeData
 from model.forge.forge_container_file_data import ForgeFileData, ForgeContainerFileData
 from model.game.game_data import GameData
@@ -18,6 +19,7 @@ class ForgeReader:
     def __init__(self, path: str, game_data: GameData, compressor: Compressor):
         self.compressor = compressor
 
+        self.game_data = game_data
         self.data_file_format = game_data.data_file_format
         self.path = path
         self.forge_name = path.split('/')[-1].split('.')[0]
@@ -30,6 +32,18 @@ class ForgeReader:
 
     def parse_forge_data(self) -> list[ForgeFileData]:
         self._forge_data = self._parse_forge_data()
+
+        # Handling for AC2 and other games that doesn't have file type info in the header
+        for forge_file_id, forge_file_data in self._forge_data.files_data.items():
+            if forge_file_data.type == 0x0:
+                try:
+                    files_bytes = self.get_decompressed_files_bytes(forge_file_data)
+                    bytes = files_bytes[forge_file_id]
+                    file: FileDataWrapper = FileDataWrapper(bytes, self.game_data)
+                    forge_file_data.type = hex(file.resource_type)
+                except Exception as exception:
+                    print(f"Error loading {self.forge_name} {forge_file_id} {forge_file_data.name} with error {exception}.")
+                    continue
 
         files_data = []
 
@@ -80,8 +94,8 @@ class ForgeReader:
         for file_id, (file_resource_type, file_name) in file_storage.items():
             child_file_data = ForgeFileData(file_id)
 
-            # TODO: Checkwhy I can't set hex here but above I can
-            # child_file_data.add_info(hex(file_resource_type), file_name)
+            if type(file_resource_type) is str:
+                file_resource_type = int(file_resource_type, 16)
 
             child_file_data.add_info(file_resource_type, file_name)
             child_file_data.add_parent(file_data)
@@ -264,13 +278,11 @@ class ForgeReader:
 
                 if raw_data:
                     file_data: ForgeContainerFileData = ForgeContainerFileData(file_id)
-                    file_type = hex(file_info[0]).replace("0x", "").upper()
-                    file_data.add_info(file_type, file_info[1])
                     file_data.add_raw_data(raw_data[0], raw_data[1])
                 else:
                     file_data: ForgeFileData = ForgeFileData(file_id)
-                    file_type = hex(file_info[0]).replace("0x", "").upper()
-                    file_data.add_info(file_type, file_info[1])
+
+                file_data.add_info(file_info[0], file_info[1])
 
                 # Combine file_info and raw_data into a nested tuple
                 files_data_dict[file_id] = file_data

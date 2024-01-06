@@ -86,7 +86,7 @@ class MaterialHandler:
 
             # Checking top child match
             if child.id == file_id:
-                files_bytes = forge_reader.get_decompressed_files_bytes(self.file_data)
+                files_bytes = forge_reader.get_decompressed_files_bytes(parent_container_file)
                 file_bytes = files_bytes[file_id]
                 print(f"Found file {child.name}:{file_id} inside exporting file container {parent_container_file.name}:{parent_container_file.id}")
                 return forge_reader, parent_container_file, child, file_bytes

@@ -4,7 +4,7 @@ from model.export.export_plugin_base import ExportPluginBase
 from model.files.file_data_wrapper import FileDataWrapper
 from model.files.file_readers_factory_base import FileReadersFactoryBase
 from model.forge.forge_data import ForgeData
-from model.forge.forge_container_file_data import ForgeFileData
+from model.forge.forge_container_file_data import ForgeFileData, ForgeContainerFileData
 from model.forge.forge_reader import ForgeReader
 from model.game.game_data import GameData
 
@@ -17,8 +17,8 @@ class ExportBinaryPlugin(ExportPluginBase):
         super().__init__(output_directory_path, file_readers_factory)
 
     def execute_internal(self, forge_reader: ForgeReader, forge_readers: list[ForgeReader], forge_data: ForgeData,
-                         file_id, file_data: ForgeFileData, game_data: GameData):
-        file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
+                         file_id, file_data: ForgeFileData,  container_file_data: ForgeContainerFileData, game_data: GameData):
+        file_bytes = forge_reader.get_decompressed_files_bytes(container_file_data)
 
         if file_bytes is None:
             print(f"Failed to find file {file_id:016X}")
