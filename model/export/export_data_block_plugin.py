@@ -25,7 +25,6 @@ class ExportMeshPlugin(ExportPluginBase):
     entity_type_int = 0x0984415E
     mesh_data_type_int = 0x415D9568
 
-    # texture_type_int = 0xA2B7E917
     plugin_name = 'Export Data Block'
 
     def __init__(self, output_directory_path: str, file_readers_factory: FileReadersFactoryBase):
