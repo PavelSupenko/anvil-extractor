@@ -9,6 +9,3 @@ class Reader(BaseFile):
         file.read_file_id()
         file.read_bytes(2)
         self.material_set = file.read_file_id()
-    
-    # file.read_file()
-    # file.read_file_id()
