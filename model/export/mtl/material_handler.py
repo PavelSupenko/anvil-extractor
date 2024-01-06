@@ -73,9 +73,13 @@ class MaterialHandler:
         if file_id in forge_reader.forge_data.files_data:
             file_data = forge_reader.forge_data.files_data[file_id]
             files_bytes = forge_reader.get_decompressed_files_bytes(file_data)
-            file_bytes = files_bytes[file_id]
-            print(f"Found file {file_id} as data file in {forge_reader.forge_name}")
-            return forge_reader, file_data, file_data, file_bytes
+
+            if file_id in files_bytes:
+                file_bytes = files_bytes[file_id]
+                print(f"Found file {file_id} as data file in {forge_reader.forge_name}")
+                return forge_reader, file_data, file_data, file_bytes
+            else:
+                print(f'File if {file_id} was found ad forge container, but bytes array is not exists for that id')
 
         print(f"Failed to find file {file_id:016X} as data file. Searching inside exporting file container...")
 
