@@ -18,7 +18,8 @@ class TreeView(QtWidgets.QTreeWidget):
                  handle_item_right_click: Callable[[TreeViewItem, 'TreeView', QPoint], None],
                  ):
         QtWidgets.QTreeWidget.__init__(self, parent)
-        # self.setHeaderHidden(True)
+        self.sorting_orders = [Qt.AscendingOrder, Qt.AscendingOrder, Qt.AscendingOrder,
+                               Qt.AscendingOrder, Qt.AscendingOrder]
 
         self.items_dictionary = {}
 
@@ -34,11 +35,36 @@ class TreeView(QtWidgets.QTreeWidget):
         self.items_dictionary = {}
         self.clear()
         self.setHeaderLabels(["Name", "File Type", "File ID", "Position", "Size"])
+        self.header().setSectionsClickable(True)
+        self.header().sectionClicked.connect(self.sortByColumn)
         self._set_column_proportions(5, 2, 2, 2, 2)  # Set proportional column widths
         self._add_nodes_to_tree(self.invisibleRootItem(), [])
 
-    def update_visual_tree(self):
-        pass
+    def sortByColumn(self, logicalIndex):
+        current_order = self.sorting_orders[logicalIndex]
+        new_order = Qt.DescendingOrder if current_order == Qt.AscendingOrder else Qt.AscendingOrder
+        self.sorting_orders = [Qt.AscendingOrder] * self.columnCount()  # Reset all columns to Ascending initially
+        self.sorting_orders[logicalIndex] = new_order
+
+        if logicalIndex == 2 or logicalIndex == 3 or logicalIndex == 4:  # Columns where numerical sorting is required
+            self.sortByNumericColumn(logicalIndex, new_order)
+        else:
+            self.sortItems(logicalIndex, new_order)
+
+    def sortByNumericColumn(self, column, order):
+        items = [(self.convertToFloat(self.topLevelItem(i).text(column)), self.topLevelItem(i)) for i in range(self.topLevelItemCount())]
+        items.sort(key=lambda x: x[0])
+        if order == Qt.DescendingOrder:
+            items.reverse()
+        for i, (_, item) in enumerate(items):
+            self.takeTopLevelItem(self.indexOfTopLevelItem(item))
+            self.insertTopLevelItem(i, item)
+
+    def convertToFloat(self, text):
+        try:
+            return float(text)
+        except ValueError:
+            return 0.0
 
     def search(self, search_text: str):
         self.filter_tree_items(search_text.strip())
