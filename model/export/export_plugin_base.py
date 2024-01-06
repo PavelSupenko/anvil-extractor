@@ -74,12 +74,14 @@ class ExportPluginBase(ABC):
 
         print(f"Failed to find file {file_id:016X} as data file. Searching inside exporting file container...")
 
-        for child_file in self.file_data.get_top_parent_forge_item_file_data().children:
+        parent_container_file = self.file_data.get_top_parent_forge_item_file_data()
+
+        for child_file in parent_container_file.children:
             child: ForgeFileData = child_file
 
             # Checking top child mathc
             if child.id == file_id:
-                files_bytes = forge_reader.get_decompressed_files_bytes(self.file_data)
+                files_bytes = forge_reader.get_decompressed_files_bytes(parent_container_file)
                 file_bytes = files_bytes[file_id]
                 return child, file_bytes
 

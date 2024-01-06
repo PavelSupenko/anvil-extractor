@@ -52,16 +52,7 @@ class ExportMeshPlugin(ExportPluginBase):
         print(f'Exported {file_id:016X}')
 
     def export_mesh_dds(self, file_id, save_folder: str):
-        forge_reader = self.forge_reader
-
-        if file_id not in forge_reader.forge_data.files_data:
-            for forge_reader_another in self.forge_readers:
-                if file_id in forge_reader_another.forge_data.files_data:
-                    forge_reader = forge_reader_another
-                    break
-
-        file_data = forge_reader.forge_data.files_data[file_id]
-        file_bytes = forge_reader.get_decompressed_files_bytes(file_data)
+        file_data, bytes = self.find_forge_container_file_data(file_id)
         file_path = os.path.join(self.output_directory_path, self.game_data.name,
                                  f'{file_data.name}.dds')
 
@@ -72,7 +63,6 @@ class ExportMeshPlugin(ExportPluginBase):
         reader_file: BaseFile = reader
         reader_texture: BaseTexture = reader
 
-        bytes = file_bytes[file_id]
         file: FileDataWrapper = FileDataWrapper(bytes, self.game_data)
 
         reader_file.read(file_id, file)
