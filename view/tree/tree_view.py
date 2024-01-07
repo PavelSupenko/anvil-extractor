@@ -66,21 +66,21 @@ class TreeView(QtWidgets.QTreeWidget):
         except ValueError:
             return 0.0
 
-    def search(self, search_text: str):
-        self.filter_tree_items(search_text.strip())
+    def search(self, search_text: str, column: int = 0):
+        self.filter_tree_items(search_text.strip(), column)
 
-    def filter_tree_items(self, search_text):
+    def filter_tree_items(self, search_text, column=0):
         self.blockSignals(True)  # Block signals temporarily to avoid triggering events while filtering
-        self.filter_children(self.invisibleRootItem(), search_text)
+        self.filter_children(self.invisibleRootItem(), search_text, column)
         self.blockSignals(False)  # Unblock signals after filtering
 
-    def filter_children(self, item, search_text) -> bool:
+    def filter_children(self, item, search_text, column=0) -> bool:
         result: bool = False
         for i in range(item.childCount()):
             child = item.child(i)
-            text = child.text(0)  # Assuming a single column tree widget
+            text = child.text(column)  # Assuming a single column tree widget
             satisfy_search = search_text.lower() in text.lower()
-            any_child_satisfy_search: bool = self.filter_children(child, search_text)
+            any_child_satisfy_search: bool = self.filter_children(child, search_text, column)
 
             should_be_shown = satisfy_search or any_child_satisfy_search
 

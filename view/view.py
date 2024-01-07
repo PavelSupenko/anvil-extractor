@@ -7,6 +7,7 @@ from typing import Callable
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QLabel, QComboBox
 
 from model.export.export_plugin_base import ExportPluginBase
 from model.settings.export_settings_loader import ExportSettingsLoader
@@ -22,6 +23,7 @@ from view.tree.tree_view_item import TreeViewItem
 
 
 class View(QtWidgets.QApplication):
+    SearchTypes = ["Name", "Type", "ID"]
 
     def __init__(self,
                  item_clicked_callback: Callable[[FileDataBase], None],
@@ -39,6 +41,8 @@ class View(QtWidgets.QApplication):
         self.item_clicked_callback = item_clicked_callback
         self.plugin_clicked_callback = plugin_clicked_callback
         self.game_settings_changed_callback = game_settings_changed_callback
+
+        self.search_column = 0
 
         # load the style
         self.icons = {}
@@ -63,6 +67,12 @@ class View(QtWidgets.QApplication):
         self.search_box.setObjectName("search_box")
         self.search_box.textChanged.connect(self._change_search)
         self.horizontal_layout.addWidget(self.search_box, 2)
+
+        self.search_by_combo = QComboBox()
+        self.search_by_combo.setFixedWidth(100)
+        self.search_by_combo.addItems(self.SearchTypes)
+        self.search_by_combo.currentIndexChanged.connect(self._handle_search_type_changed)
+        self.horizontal_layout.addWidget(self.search_by_combo)
 
         # file tree view
         self.file_view = TreeView(self.central_widget, self.icons, self.handle_item_clicked,
@@ -136,8 +146,11 @@ class View(QtWidgets.QApplication):
                                                                click_callback=self.plugin_clicked_callback)
         context_menu.exec_(parent.mapToGlobal(pos))
 
+    def _handle_search_type_changed(self, index):
+        self.search_column = index
+
     def _change_search(self, text: str):
-        self.file_view.search(text)
+        self.file_view.search(text, column=self.search_column)
 
     def _load_style(self, style_name: str):
         resources_path = os.path.join(os.path.dirname(__file__), 'resources')
