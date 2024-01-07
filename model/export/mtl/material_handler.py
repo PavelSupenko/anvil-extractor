@@ -34,7 +34,7 @@ class MaterialHandler:
         forge_reader, forge_container_data, material_data, material_bytes = self.get_forge_container_file_data(file_id)
 
         if material_data is None:
-            print(f"Failed to find file {file_id:016X}")
+            print(f"Failed to find file {file_id} ({file_id:016X})")
             return Material(f'{file_id:016X}', missing_no=True)
 
         name = material_data.name
@@ -81,7 +81,7 @@ class MaterialHandler:
             else:
                 print(f'File if {file_id} was found ad forge container, but bytes array is not exists for that id')
 
-        print(f"Failed to find file {file_id:016X} as data file. Searching inside exporting file container...")
+        print(f"Failed to find file {file_id} ({file_id:016X}) as data file. Searching inside exporting file container...")
 
         parent_container_file = self.file_data.get_top_parent_forge_item_file_data()
 
@@ -95,5 +95,5 @@ class MaterialHandler:
                 print(f"Found file {child.name}:{file_id} inside exporting file container {parent_container_file.name}:{parent_container_file.id}")
                 return forge_reader, parent_container_file, child, file_bytes
 
-        print(f"Failed to find file {file_id:016X} inside exporting file container. Stop searching.")
+        print(f"Failed to find file {file_id} ({file_id:016X}) inside exporting file container. Stop searching.")
         return None, None, None, None

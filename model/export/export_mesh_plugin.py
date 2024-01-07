@@ -49,7 +49,7 @@ class ExportMeshPlugin(ExportPluginBase):
                              self.file_readers_factory)
         obj_handler.export(mesh, file_name)
         obj_handler.save_and_close(self.export_mesh_dds)
-        print(f'Exported {file_id:016X}')
+        print(f'Exported {file_id} ({file_id:016X})')
 
     def export_mesh_dds(self, file_id, save_folder: str):
         file_data, bytes = self.find_forge_container_file_data(file_id)

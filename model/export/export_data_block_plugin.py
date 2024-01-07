@@ -63,7 +63,7 @@ class ExportMeshPlugin(ExportPluginBase):
             entry_file_data, entry_file_bytes = self.find_forge_container_file_data(data_block_entry_id)
 
             if entry_file_data is None:
-                print(f"Failed to find file {data_block_entry_id:016X}")
+                print(f"Failed to find file {data_block_entry_id} ({data_block_entry_id:016X})")
                 continue
 
             if entry_file_data.type in (0x0984415E, 0x3F742D26):  # entity and entity group
@@ -72,11 +72,11 @@ class ExportMeshPlugin(ExportPluginBase):
                     entity_file: FileDataWrapper = FileDataWrapper(entry_file_bytes, game_data)
                     entity.read(data_block_entry_id, entity_file)
                 except Exception as exception:
-                    print(f"Failed reading file {entry_file_data.name} {entry_file_data.id:016X}")
+                    print(f"Failed reading file {entry_file_data.name} with id {entry_file_data.id} ({entry_file_data.id:016X})")
                     entity = None
 
                 if entity is None or entity.nested_files is None:
-                    print(f"Failed reading entity file {entry_file_data.name} {entry_file_data.id:016X}")
+                    print(f"Failed reading entity file {entry_file_data.name} with id {entry_file_data.id} ({entry_file_data.id:016X})")
                     continue
 
                 entity_nested_files: list[BaseFile] = entity.nested_files
@@ -94,7 +94,7 @@ class ExportMeshPlugin(ExportPluginBase):
                             # mesh_instance_data: MeshInstanceData = nested_file.nested_files[0x536E963B]
                             mesh_instance_data = nested_file.nested_files[0x536E963B]
                         else:
-                            print(f"Could not find mesh instance data for {entry_file_data.name} {entry_file_data.id:016X}")
+                            print(f"Could not find mesh instance data for {entry_file_data.name} {entry_file_data.id} ({entry_file_data.id:016X})")
                             continue
                         if mesh_instance_data is None:
                             print(f"Failed to find file {entry_file_data.name}")
@@ -104,7 +104,7 @@ class ExportMeshPlugin(ExportPluginBase):
                         mesh_file_data, mesh_file_bytes = self.find_forge_container_file_data(mesh_instance_data.mesh_id)
 
                         if mesh_file_data is None:
-                            print(f"Failed to find file {mesh_instance_data.mesh_id:016X}")
+                            print(f"Failed to find file {mesh_instance_data.mesh_id} ({mesh_instance_data.mesh_id:016X})")
                             continue
 
                         reader_file: BaseFile = self.create_mesh_data_reader()
@@ -114,7 +114,7 @@ class ExportMeshPlugin(ExportPluginBase):
                         reader_file.read(mesh_file_data.id, mesh_file)
 
                         if mesh is None or mesh.vertices is None:
-                            print(f"Failed reading model file {mesh_file_data.name} {mesh_file_data.id:016X}")
+                            print(f"Failed reading model file {mesh_file_data.name} {mesh_file_data.id} ({mesh_file_data.id:016X})")
                             continue
                         transform = entity.transformation_matrix
                         if len(mesh_instance_data.transformation_matrix) == 0:

@@ -4,7 +4,7 @@ class FileReadersFactoryBase:
 
     def get_file_reader(self, file_type: int) -> 'BaseFile':
         if file_type not in self.file_readers:
-            print(f'File type {file_type:016X} not supported')
+            print(f'File type {file_type} ({file_type:016X}) not supported')
             return None
 
         return self.file_readers[file_type]()

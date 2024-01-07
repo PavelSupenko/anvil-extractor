@@ -21,7 +21,7 @@ class ExportBinaryPlugin(ExportPluginBase):
         file_bytes = forge_reader.get_decompressed_files_bytes(container_file_data)
 
         if file_bytes is None:
-            print(f"Failed to find file {file_id:016X}")
+            print(f"Failed to find file {file_id} ({file_id:016X})")
             return
 
         file_path = os.path.join(self.output_directory_path, game_data.name,

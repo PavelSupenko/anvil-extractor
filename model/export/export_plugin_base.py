@@ -72,7 +72,7 @@ class ExportPluginBase(ABC):
             file_bytes = files_bytes[file_id]
             return file_data, file_bytes
 
-        print(f"Failed to find file {file_id:016X} as data file. Searching inside exporting file container...")
+        print(f"Failed to find file {file_id} ({file_id:016X}) as data file. Searching inside exporting file container...")
 
         parent_container_file = self.file_data.get_top_parent_forge_item_file_data()
 
@@ -83,7 +83,8 @@ class ExportPluginBase(ABC):
             if child.id == file_id:
                 files_bytes = forge_reader.get_decompressed_files_bytes(parent_container_file)
                 file_bytes = files_bytes[file_id]
+                print(f"Found file {child.name}:{file_id} inside exporting file container {parent_container_file.name}:{parent_container_file.id}")
                 return child, file_bytes
 
-        print(f"Failed to find file {file_id:016X} inside exporting file container. Stop searching.")
+        print(f"Failed to find file {file_id} ({file_id:016X}) inside exporting file container. Stop searching.")
         return None, None
