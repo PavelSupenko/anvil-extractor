@@ -30,6 +30,13 @@ class ExportPluginsFactory:
                             # If the object is a subclass of ExportPluginBase and not ExportPluginBase itself
                             # Create an instance of the class
                             instance = obj(self.output_directory, self.file_readers_factory_base)
-                            default_export_plugins.append(instance)  # Add the instance to the list
+
+                            is_plugin_already_in_array: bool = False
+                            for plugin_in_array in default_export_plugins:
+                                if plugin_in_array.plugin_name == instance.plugin_name:
+                                    is_plugin_already_in_array = True
+
+                            if not is_plugin_already_in_array:
+                                default_export_plugins.append(instance)  # Add the instance to the list
 
         return default_export_plugins
