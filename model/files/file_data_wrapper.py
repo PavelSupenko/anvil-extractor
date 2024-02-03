@@ -33,6 +33,10 @@ class FileDataWrapper(BytesIO):
         self.resource_type = self.read_resource_type()
 
     @property
+    def game_data(self) -> GameData:
+        return self._game_data
+
+    @property
     def indent(self):
         """with file.indent:"""
         return Indent()

@@ -7,4 +7,5 @@ class FileReadersFactoryBase:
             print(f'File type {file_type} ({file_type:016X}) not supported')
             return None
 
+        print(f'Supported file type {file_type} ({file_type:016X})')
         return self.file_readers[file_type]()
